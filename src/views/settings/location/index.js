@@ -158,7 +158,7 @@ export default function Location() {
 
     return (
         <div>
-            <Grid mb={2} container direction="row" justifyContent="space-between" alignItems="center">
+            <Grid mb={2} container direction="row" justifyContent="space-between" alignItems="center" sx={{ py: 1 }}>
                 <Typography variant="h3" color={COLORS.color1}>
                     Location
                 </Typography>

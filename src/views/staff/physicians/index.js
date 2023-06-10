@@ -37,6 +37,7 @@ import { useEffect } from 'react';
 import axios from 'axios';
 import ProfileCard from 'ui-component/cards/ProfileCard';
 import { useSelector } from 'react-redux';
+import SearchField from 'ui-component/FormUI/SearchField.js';
 
 export default function Physicians() {
     const { user } = useSelector((state) => state?.user);
@@ -48,23 +49,23 @@ export default function Physicians() {
     const [selectedView, setSelectedView] = useState('list');
 
     const handleChangePage = (event, newPage) => {
-        getPhysicianList(newPage);
+        getPhysicianList(newPage, rowsPerPage, searchQuery);
         setPage(newPage);
     };
 
     const handleChangeRowsPerPage = (event) => {
+        getPhysicianList(page, event.target.value, searchQuery);
         setRowsPerPage(+event.target.value);
-        setPage(0);
     };
 
     const [physicianList, setPhysicianList] = useState(null);
-    const [searchQuery, setSearchQuery] = useState();
+    const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const navigate = useNavigate();
 
-    const getPhysicianList = async (pageNumber) => {
+    const getPhysicianList = async (pageNumber, pageSize, searchValue) => {
         try {
             setLoading(true);
             setError(null);
@@ -72,8 +73,8 @@ export default function Physicians() {
 
             const res = await axios({
                 method: 'get',
-                url: `${BASE_URL}api/physician/physicianList?pageNumber=${pageNumber + 1}&pageSize=${rowsPerPage}&QuerySearch=${
-                    searchQuery ?? ''
+                url: `${BASE_URL}api/physician/physicianList?pageNumber=${pageNumber + 1}&pageSize=${pageSize}&QuerySearch=${
+                    searchValue ?? ''
                 }&isConfirm=false`,
                 headers: {
                     Authorization: `Bearer ${user?.token}`
@@ -91,7 +92,7 @@ export default function Physicians() {
     };
 
     useEffect(() => {
-        getPhysicianList(page);
+        getPhysicianList(page, rowsPerPage, searchQuery);
     }, []);
 
     return (
@@ -132,36 +133,24 @@ export default function Physicians() {
 
             <Paper sx={{ width: '100%', overflow: 'hidden' }}>
                 <Grid container justifyContent="space-between" alignItems="center" p={2} rowGap={2}>
-                    <FormControl
-                        onSubmit={() => {
-                            setPage(0);
-                            getPhysicianList(0);
-                        }}
-                        sx={{ width: '50ch' }}
-                        variant="outlined"
-                    >
-                        <InputLabel>Search</InputLabel>
-                        <OutlinedInput
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        type="submit"
-                                        title="Search Physician"
-                                        onClick={() => {
-                                            setPage(0);
-                                            getPhysicianList(0);
-                                        }}
-                                        // onMouseDown={handleMouseDownPassword}
-                                        edge="end"
-                                    >
-                                        <SearchIcon />
-                                    </IconButton>
-                                </InputAdornment>
-                            }
+                    <Grid item lg={4} xs={12}>
+                        <SearchField
                             label="Search"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onClickSearch={() => {
+                                setPage(0);
+                                getPhysicianList(0, rowsPerPage, searchQuery);
+                            }}
+                            onClickClear={() => {
+                                setPage(0);
+                                setSearchQuery('');
+                                getPhysicianList(0, rowsPerPage, '');
+                            }}
+                            titleSearchBtn={'Search Patient'}
+                            titleClearBtn={'Clear search list'}
                         />
-                    </FormControl>
+                    </Grid>
 
                     <Grid sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
                         <IconButton title="Print Physician List">
