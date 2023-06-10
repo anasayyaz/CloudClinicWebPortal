@@ -49,6 +49,7 @@ import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ModalConfirmation from 'ui-component/modals/ModalConfirmation';
+import SearchField from 'ui-component/FormUI/SearchField.js';
 
 export default function Medicine() {
     const { user } = useSelector((state) => state?.user);
@@ -58,13 +59,13 @@ export default function Medicine() {
     const [count, setCount] = useState(0);
 
     const handleChangePage = (event, newPage) => {
-        getMedicineList(newPage);
+        getMedicineList(newPage, rowsPerPage, searchQuery);
         setPage(newPage);
     };
 
     const handleChangeRowsPerPage = (event) => {
+        getMedicineList(page, event.target.value, searchQuery);
         setRowsPerPage(+event.target.value);
-        setPage(0);
     };
 
     const [medicineList, setMedicineList] = useState(null);
@@ -83,7 +84,7 @@ export default function Medicine() {
         dosageForm: Yup.string().trim().required('Required')
     });
 
-    const getMedicineList = async (pageNumber) => {
+    const getMedicineList = async (pageNumber, pageSize, searchValue) => {
         try {
             setLoading(true);
             setError(null);
@@ -91,8 +92,8 @@ export default function Medicine() {
 
             const res = await axios({
                 method: 'get',
-                url: `${BASE_URL}api/medicine/medicinesList?pageNumber=${pageNumber + 1}&pageSize=${rowsPerPage}&QuerySearch=${
-                    searchQuery ?? ''
+                url: `${BASE_URL}api/medicine/medicinesList?pageNumber=${pageNumber + 1}&pageSize=${pageSize}&QuerySearch=${
+                    searchValue ?? ''
                 }&isConfirm=false`,
                 headers: {
                     Authorization: `Bearer ${user?.token}`
@@ -102,7 +103,6 @@ export default function Medicine() {
             setMedicineList(res?.data);
             setCount(res?.data?.paginationMetadata?.totalCount);
         } catch (error) {
-            console.log(error);
             setError(error);
         } finally {
             setLoading(false);
@@ -131,7 +131,7 @@ export default function Medicine() {
             });
 
             if (res?.data) {
-                modal.value == 'update' && getMedicineList(page);
+                modal.value == 'update' && getMedicineList(page, rowsPerPage, searchQuery);
                 resetForm();
                 setModal({ ...modal, open: false });
                 setSelectedRow(null);
@@ -159,7 +159,7 @@ export default function Medicine() {
 
             if (res?.data) {
                 setSelectedRow(null);
-                getMedicineList(page);
+                getMedicineList(page, rowsPerPage, searchQuery);
                 setOpenModal(false);
             }
         } catch (error) {
@@ -170,7 +170,7 @@ export default function Medicine() {
     };
 
     useEffect(() => {
-        getMedicineList(page);
+        getMedicineList(page, rowsPerPage, searchQuery);
     }, []);
 
     return (
@@ -198,37 +198,26 @@ export default function Medicine() {
 
             <Paper sx={{ width: '100%', overflow: 'hidden' }}>
                 <Grid container justifyContent="space-between" alignItems="center" p={2} rowGap={2}>
-                    <FormControl
-                        onSubmit={() => {
-                            setPage(0);
-                            getMedicineList(0);
-                        }}
-                        sx={{ width: '50ch' }}
-                        variant="outlined"
-                    >
-                        <InputLabel>Search</InputLabel>
-                        <OutlinedInput
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        type="submit"
-                                        title="Search Medicine"
-                                        onClick={() => {
-                                            setPage(0);
-                                            getMedicineList(0);
-                                        }}
-                                        edge="end"
-                                    >
-                                        <SearchIcon />
-                                    </IconButton>
-                                </InputAdornment>
-                            }
+                    <Grid item lg={4} xs={12}>
+                        <SearchField
                             label="Search"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onClickSearch={() => {
+                                setPage(0);
+                                getMedicineList(0, rowsPerPage, searchQuery);
+                            }}
+                            onClickClear={() => {
+                                setPage(0);
+                                setSearchQuery('');
+                                getMedicineList(0, rowsPerPage, '');
+                            }}
+                            titleSearchBtn={'Search Patient'}
+                            titleClearBtn={'Clear search list'}
                         />
-                    </FormControl>
+                    </Grid>
 
-                    <Grid sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+                    <Grid item sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
                         <IconButton title="Print Medicine List">
                             <PrintIcon />
                         </IconButton>

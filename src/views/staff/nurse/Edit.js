@@ -262,7 +262,7 @@ export default function EditNurse() {
                         <Paper sx={{ width: '100%', overflow: 'hidden' }}>
                             <Grid container direction="row" p={2} spacing={2}>
                                 <Grid item lg={1} md={1.5} sm={2.5} xs={12}>
-                                    <SelectCustom defaultValue="" name="title" label="Title" options={['Dr', 'Mr', 'Ms']} />
+                                    <SelectCustom defaultValue="" name="title" label="Title" options={['Mr', 'Ms']} />
                                 </Grid>
 
                                 <Grid item lg={2} md={2.5} sm={3.5} xs={12}>

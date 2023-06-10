@@ -49,6 +49,7 @@ import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ModalConfirmation from 'ui-component/modals/ModalConfirmation';
+import SearchField from 'ui-component/FormUI/SearchField.js';
 
 export default function LabTest() {
     const { user } = useSelector((state) => state?.user);
@@ -58,13 +59,13 @@ export default function LabTest() {
     const [count, setCount] = useState(0);
 
     const handleChangePage = (event, newPage) => {
-        getLabTestTypeList(newPage);
+        getLabTestTypeList(newPage, rowsPerPage, searchQuery);
         setPage(newPage);
     };
 
     const handleChangeRowsPerPage = (event) => {
+        getLabTestTypeList(page, event.target.value, searchQuery);
         setRowsPerPage(+event.target.value);
-        setPage(0);
     };
 
     const [labTestTypeList, setLabTestTypeList] = useState(null);
@@ -85,7 +86,7 @@ export default function LabTest() {
         category: Yup.string().trim().required('Required')
     });
 
-    const getLabTestTypeList = async (pageNumber) => {
+    const getLabTestTypeList = async (pageNumber, pageSize, searchValue) => {
         try {
             setLoading(true);
             setError(null);
@@ -93,8 +94,8 @@ export default function LabTest() {
 
             const res = await axios({
                 method: 'get',
-                url: `${BASE_URL}api/LabTestType/LabTestList?pageNumber=${pageNumber + 1}&pageSize=${rowsPerPage}&QuerySearch=${
-                    searchQuery ?? ''
+                url: `${BASE_URL}api/LabTestType/LabTestList?pageNumber=${pageNumber + 1}&pageSize=${pageSize}&QuerySearch=${
+                    searchValue ?? ''
                 }&isConfirm=false`,
                 headers: {
                     Authorization: `Bearer ${user?.token}`
@@ -133,7 +134,7 @@ export default function LabTest() {
             });
 
             if (res?.data) {
-                modal.value == 'update' && getLabTestTypeList(page);
+                modal.value == 'update' && getLabTestTypeList(page, rowsPerPage, searchQuery);
                 resetForm();
                 setModal({ ...modal, open: false });
                 setSelectedRow(null);
@@ -161,7 +162,7 @@ export default function LabTest() {
 
             if (res?.data) {
                 setSelectedRow(null);
-                getLabTestTypeList(page);
+                getLabTestTypeList(page, rowsPerPage, searchQuery);
                 setOpenModal(false);
             }
         } catch (error) {
@@ -172,7 +173,7 @@ export default function LabTest() {
     };
 
     useEffect(() => {
-        getLabTestTypeList(page);
+        getLabTestTypeList(page, rowsPerPage, searchQuery);
     }, []);
 
     return (
@@ -200,35 +201,24 @@ export default function LabTest() {
 
             <Paper sx={{ width: '100%', overflow: 'hidden' }}>
                 <Grid container justifyContent="space-between" alignItems="center" p={2} rowGap={2}>
-                    <FormControl
-                        onSubmit={() => {
-                            setPage(0);
-                            getLabTestTypeList(0);
-                        }}
-                        sx={{ width: '50ch' }}
-                        variant="outlined"
-                    >
-                        <InputLabel>Search</InputLabel>
-                        <OutlinedInput
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        type="submit"
-                                        title="Search Lab Test"
-                                        onClick={() => {
-                                            setPage(0);
-                                            getLabTestTypeList(0);
-                                        }}
-                                        edge="end"
-                                    >
-                                        <SearchIcon />
-                                    </IconButton>
-                                </InputAdornment>
-                            }
+                    <Grid item lg={4} xs={12}>
+                        <SearchField
                             label="Search"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onClickSearch={() => {
+                                setPage(0);
+                                getLabTestTypeList(0, rowsPerPage, searchQuery);
+                            }}
+                            onClickClear={() => {
+                                setPage(0);
+                                setSearchQuery('');
+                                getLabTestTypeList(0, rowsPerPage, '');
+                            }}
+                            titleSearchBtn={'Search Patient'}
+                            titleClearBtn={'Clear search list'}
                         />
-                    </FormControl>
+                    </Grid>
 
                     <Grid sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
                         <IconButton title="Print Lab Test List">

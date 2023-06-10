@@ -31,6 +31,8 @@ import AddNewPatient from 'views/staff/patients/AddNew';
 import EditPatient from 'views/staff/patients/Edit';
 import AddNewNurse from 'views/staff/nurse/AddNew';
 import EditNurse from 'views/staff/nurse/Edit';
+import AddNewReceptionist from 'views/staff/receptionists/AddNew';
+import EditReceptionist from 'views/staff/receptionists/Edit';
 
 // dashboard routing
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
@@ -133,6 +135,14 @@ const MainRoutes = {
         {
             path: 'receptionists',
             element: <Receptionists />
+        },
+        {
+            path: 'receptionists/add',
+            element: <AddNewReceptionist />
+        },
+        {
+            path: 'receptionists/edit/:nationalId',
+            element: <EditReceptionist />
         },
         {
             path: 'medicine',

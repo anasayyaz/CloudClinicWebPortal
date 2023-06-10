@@ -155,7 +155,7 @@ export default function Wards() {
     return (
         <div>
             <Grid mb={2} container direction="row" justifyContent="space-between" alignItems="center">
-                <Typography variant="h3" color={COLORS.color1}>
+                <Typography variant="h3" color={COLORS.color1} sx={{ py: 1 }}>
                     Wards
                 </Typography>
             </Grid>
