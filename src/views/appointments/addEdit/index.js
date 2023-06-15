@@ -1,20 +1,65 @@
-// material-ui
-import { Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
 
-// project imports
-import MainCard from 'ui-component/cards/MainCard';
+import {
+    TableRow,
+    TablePagination,
+    TableHead,
+    TableContainer,
+    TableBody,
+    TableCell,
+    Table,
+    Paper,
+    Button,
+    CircularProgress,
+    FormControl,
+    Grid,
+    IconButton,
+    InputLabel,
+    Typography,
+    Select,
+    MenuItem
+} from '@mui/material';
 
-// ==============================|| SAMPLE PAGE ||============================== //
+// -----------------  Importing Icons
+import { IconPlus } from '@tabler/icons';
+import PrintIcon from '@mui/icons-material/Print';
 
-const AddEdit = () => (
-    <MainCard title="Add / Edit">
-        <Typography variant="body2">
-            Lorem ipsum dolor sit amen, consenter nipissing eli, sed do elusion tempos incident ut laborers et doolie magna alissa. Ut enif
-            ad minim venice, quin nostrum exercitation illampu laborings nisi ut liquid ex ea commons construal. Duos aube grue dolor in
-            reprehended in voltage veil esse colum doolie eu fujian bulla parian. Exceptive sin ocean cuspidate non president, sunk in culpa
-            qui officiate descent molls anim id est labours.
-        </Typography>
-    </MainCard>
-);
+// -----------------  Importing Constants
+import { COLORS } from 'constants/colors';
+import { BASE_URL } from 'constants/baseUrl';
 
-export default AddEdit;
+// -----------------  Utilis
+import { profileImage } from 'utils/fetchImage';
+
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import SearchField from 'ui-component/FormUI/SearchField.js';
+import useFetch from 'hooks/useFetch';
+import Scheduler from '../Scheduler';
+
+export default function AddEdit() {
+    const { user } = useSelector((state) => state?.user);
+
+    const [page, setPage] = React.useState(0);
+    const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [count, setCount] = useState(0);
+
+    const navigate = useNavigate();
+
+    return (
+        <div>
+            <Scheduler />
+        </div>
+    );
+}
+
+const styles = {
+    loadingContainer: {
+        height: 400,
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+    }
+};

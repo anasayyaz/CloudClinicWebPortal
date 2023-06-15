@@ -205,7 +205,7 @@ const FirebaseLogin = ({ ...others }) => {
                                 }
                                 label="Remember me"
                             /> */}
-                            <Typography variant="subtitle1" color="secondary" sx={{ textDecoration: 'none', cursor: 'pointer' }}>
+                            <Typography variant="subtitle1" color={COLORS.primary} sx={{ textDecoration: 'none', cursor: 'pointer' }}>
                                 Forgot Password?
                             </Typography>
                         </Stack>
@@ -224,7 +224,7 @@ const FirebaseLogin = ({ ...others }) => {
                                     size="large"
                                     type="submit"
                                     variant="contained"
-                                    color="secondary"
+                                    color="primary"
                                     sx={{
                                         backgroundColor: COLORS.primary
                                     }}
