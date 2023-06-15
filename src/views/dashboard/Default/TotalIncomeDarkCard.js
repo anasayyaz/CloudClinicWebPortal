@@ -48,7 +48,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 // ==============================|| DASHBOARD - TOTAL INCOME DARK CARD ||============================== //
 
-const TotalIncomeDarkCard = ({ isLoading, title, icon }) => {
+const TotalIncomeDarkCard = ({ isLoading, title, icon, onClick }) => {
     const theme = useTheme();
 
     return (
@@ -56,7 +56,7 @@ const TotalIncomeDarkCard = ({ isLoading, title, icon }) => {
             {isLoading ? (
                 <TotalIncomeCard />
             ) : (
-                <CardWrapper border={false} content={false}>
+                <CardWrapper border={false} content={false} onClick={onClick}>
                     <Box sx={{ p: 2 }}>
                         <List sx={{ py: 0 }}>
                             <ListItem alignItems="center" disableGutters sx={{ py: 0 }}>

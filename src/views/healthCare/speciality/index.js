@@ -133,7 +133,7 @@ export default function Speciality() {
         try {
             const res = await axios({
                 method: 'delete',
-                url: `${BASE_URL}api/speciality/${selectedRowToDelete?.id}`,
+                url: `${BASE_URL}api/colorcode/${selectedRowToDelete?.id}`,
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${user?.token}`
