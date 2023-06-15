@@ -58,6 +58,7 @@ export default function Scheduler() {
     const [modalEdit, setModalEdit] = useState({ open: false, value: null });
     const [currentDate, setCurrentDate] = React.useState(new Date().toLocaleDateString('en-CA'));
     const [newStartDatePicker, setNewStartDatePicker] = React.useState(new Date().toLocaleDateString('en-CA'));
+    const [loadingRequest, setLoadingRequest] = useState(false);
     const [Patient, setPatient] = React.useState(null);
     const [Consultant, setConsultant] = React.useState(null);
     const [calendarEvent, setCalendarEvent] = useState({
@@ -153,6 +154,7 @@ export default function Scheduler() {
     }, []);
 
     const handleRequest = async (values, resetForm) => {
+        setLoadingRequest(true);
         try {
             const data = {
                 Title: values.title,
@@ -186,9 +188,13 @@ export default function Scheduler() {
             getVisitList();
             if (responseCreateAppointment.status == 200);
             {
+                setModalAdd({ open: false, value: 'add' });
                 toast.success('Apppointment added successfully');
             }
-        } catch (error) {}
+        } catch (error) {
+        } finally {
+            setLoadingRequest(false);
+        }
     };
 
     return (
@@ -260,22 +266,22 @@ export default function Scheduler() {
                             </Grid>
                             <Grid item lg={12} md={12} sm={12} xs={12} mt={1}>
                                 <Box sx={styles.btnContainer}>
-                                    {/* {loadingRequest ? (
+                                    {loadingRequest ? (
                                         <CircularProgress size={25} color="inherit" />
-                                    ) : ( */}
-                                    <>
-                                        <Button
-                                            onClick={() => setModalAdd({ open: false, value: null })}
-                                            variant="text"
-                                            sx={{ color: 'red' }}
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button type="submit" variant="text" sx={{ color: COLORS.secondory }}>
-                                            {modalAdd.value == 'add' ? 'Save' : 'Update'}
-                                        </Button>
-                                    </>
-                                    {/* )} */}
+                                    ) : (
+                                        <>
+                                            <Button
+                                                onClick={() => setModalAdd({ open: false, value: null })}
+                                                variant="text"
+                                                sx={{ color: 'red' }}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button type="submit" variant="text" sx={{ color: COLORS.secondory }}>
+                                                {modalAdd.value == 'add' ? 'Save' : 'Update'}
+                                            </Button>
+                                        </>
+                                    )}
                                 </Box>
                             </Grid>
                         </Grid>
