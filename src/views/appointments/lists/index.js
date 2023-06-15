@@ -11,6 +11,7 @@ import {
     Box,
     Button,
     CircularProgress,
+    Divider,
     FormControl,
     FormControlLabel,
     Grid,
@@ -51,6 +52,15 @@ import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ModalConfirmation from 'ui-component/modals/ModalConfirmation';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import MeetingTitle from 'assets/images/icons/meeting-title.svg';
+import VideoCameraFrontIcon from '@mui/icons-material/VideoCameraFront';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import MeetingCard from 'ui-component/cards/MeetingCard';
+import SearchField from 'ui-component/FormUI/SearchField.js';
+import { getDetail } from 'services/getDetail';
+import moment from 'moment/moment';
+import HistoryForm from 'ui-component/HistoryForm';
 
 export default function Lists() {
     const { user } = useSelector((state) => state?.user);
@@ -60,38 +70,48 @@ export default function Lists() {
     const [count, setCount] = useState(0);
 
     const handleChangePage = (event, newPage) => {
-        getMedicineList(newPage);
+        getVisitList(newPage, rowsPerPage, isConfirmed, searchQuery);
         setPage(newPage);
     };
 
     const handleChangeRowsPerPage = (event) => {
+        getVisitList(page, event.target.value, isConfirm, searchQuery);
         setRowsPerPage(+event.target.value);
-        setPage(0);
     };
 
-    const [medicineList, setMedicineList] = useState(null);
-    const [searchQuery, setSearchQuery] = useState();
-    const [isConfirm, setIsConfirm] = useState('all');
+    const handleIsConfirmed = (e) => {
+        getVisitList(page, rowsPerPage, e.target.value, searchQuery);
+        setIsConfirmed(e.target.value);
+    };
+
+    const [visitList, setVisitList] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isConfirmed, setIsConfirmed] = useState('all');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const getMedicineList = async (pageNumber) => {
+    const [patient, setPatient] = useState({ loading: false, error: null, data: null, modalOpen: false });
+    const [cancel, setCancel] = useState({ loading: false, error: null, data: null, modalOpen: false });
+
+    const [historyModal, setHistoryModal] = useState(false);
+
+    const getVisitList = async (pageNumber, pageSize, isConfirm, searchValue) => {
         try {
             setLoading(true);
             setError(null);
-            setMedicineList(null);
+            setVisitList(null);
 
             const res = await axios({
                 method: 'get',
-                url: `${BASE_URL}api/medicine/medicinesList?pageNumber=${pageNumber + 1}&pageSize=${rowsPerPage}&QuerySearch=${
-                    searchQuery ?? ''
-                }&isConfirm=false`,
+                url: `${BASE_URL}api/visit/primaryCareVisitsList/${user?.userId}?pageNumber=${
+                    pageNumber + 1
+                }&pageSize=${pageSize}&QuerySearch=${searchValue ?? ''}&isConfirm=${isConfirm == 'all' ? '' : isConfirm}`,
                 headers: {
                     Authorization: `Bearer ${user?.token}`
                 }
             });
 
-            setMedicineList(res?.data);
+            setVisitList(res?.data);
             setCount(res?.data?.paginationMetadata?.totalCount);
         } catch (error) {
             console.log(error);
@@ -102,11 +122,79 @@ export default function Lists() {
     };
 
     useEffect(() => {
-        getMedicineList(page);
+        getVisitList(page, rowsPerPage, isConfirmed, searchQuery);
     }, []);
+
+    //--------------------  Getting Patient Detail and handling other states using object
+    const handlePatientProfile = async (nationalId) => {
+        setPatient({ ...patient, modalOpen: true, loading: true });
+        try {
+            const patientDetail = await getDetail('patient', nationalId);
+
+            setPatient({ ...patient, loading: false, modalOpen: true, data: patientDetail?.data });
+        } catch (error) {
+            setPatient({ ...patient, loading: false, modalOpen: true, error: error });
+        }
+    };
+
+    //--------------------  Confirm Visit  ------------------------------
+    const handleConfirmVisit = async (visitConfirm, visit) => {
+        try {
+            const res = await axios({
+                method: 'put',
+                url: `${BASE_URL}api/visit/confirmVisit/${visit?.id}`,
+                data: { isConfirm: visitConfirm },
+                headers: {
+                    Authorization: `Bearer ${user?.token}`
+                }
+            });
+
+            if (res?.data) {
+                const updatedVisitList = visitList.items.map((obj) => {
+                    if (obj.id === visit?.id) {
+                        obj.isConfirm = !obj.isConfirm; // change isConfirm Status of visitID that matched
+                    }
+                    return obj;
+                });
+                let newVisitList = { items: updatedVisitList };
+                setVisitList(newVisitList);
+            }
+        } catch (error) {
+            return toast.error(error?.response?.data ?? error?.message);
+        }
+    };
+
+    // ----------------------  Cancel Appointment  ---------------------------
+    const handleCancelAppointment = async () => {
+        const { data: visit } = cancel;
+        setCancel({ ...cancel, loading: true });
+        try {
+            const res = await axios({
+                method: 'put',
+                url: `${BASE_URL}api/visit/updateCancelVisitStatus/${visit?.id}`,
+                data: { id: visit.id, status: 10 },
+                headers: {
+                    Authorization: `Bearer ${user?.token}`
+                }
+            });
+
+            if (res?.data) {
+                const updatedVisitList = visitList.items.filter((obj) => {
+                    return obj.id !== visit?.id; //------------- Remove that object that match that id
+                });
+                let newVisitList = { items: updatedVisitList };
+                setVisitList(newVisitList);
+            }
+        } catch (error) {
+            return toast.error(error?.response?.data ?? error?.message);
+        } finally {
+            setCancel({ ...cancel, loading: false, modalOpen: false });
+        }
+    };
 
     return (
         <div>
+            {/* -----------------  Main Header  -------------------------- */}
             <Grid mb={2} container direction="row" justifyContent="space-between" alignItems="center">
                 <Typography variant="h3" color={COLORS.color1}>
                     Appointment List
@@ -114,84 +202,82 @@ export default function Lists() {
 
                 <Grid item sx={{ ml: 'auto' }}>
                     <FormControl sx={{ width: 130 }}>
-                        <Select size="small" value={isConfirm} onChange={(e) => setIsConfirm(e.target.value)}>
+                        <Select size="small" value={isConfirmed} onChange={handleIsConfirmed}>
                             <MenuItem value={'all'}>All</MenuItem>
-                            <MenuItem value={'true'}>Confirmed</MenuItem>
-                            <MenuItem value={'false'}>Unconfirmed</MenuItem>
+                            <MenuItem value={true}>Confirmed</MenuItem>
+                            <MenuItem value={false}>Unconfirmed</MenuItem>
                         </Select>
                     </FormControl>
                 </Grid>
             </Grid>
 
+            {/* ---------------------  Search Bar and Print Button ------------------- */}
             <Grid container justifyContent="space-between" alignItems="center" rowGap={2}>
-                <FormControl
-                    onSubmit={() => {
-                        setPage(0);
-                        getMedicineList(0);
-                    }}
-                    sx={{ width: '50ch' }}
-                    variant="outlined"
-                >
-                    <InputLabel>Search</InputLabel>
-                    <OutlinedInput
+                <Grid item lg={4} xs={12}>
+                    <SearchField
+                        label="Search"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        endAdornment={
-                            <InputAdornment position="end">
-                                {searchQuery && (
-                                    <Button type="submit" variant="text" sx={{ color: 'gray' }} onClick={() => setSearchQuery('')}>
-                                        Clear
-                                    </Button>
-                                )}
-
-                                <IconButton
-                                    type="submit"
-                                    title="Search Medicine"
-                                    onClick={() => {
-                                        setPage(0);
-                                        getMedicineList(0);
-                                    }}
-                                    edge="end"
-                                >
-                                    <SearchIcon />
-                                </IconButton>
-                            </InputAdornment>
-                        }
-                        label="Search"
+                        onClickSearch={() => {
+                            setPage(0);
+                            getVisitList(0, rowsPerPage, isConfirmed, searchQuery);
+                        }}
+                        onClickClear={() => {
+                            setPage(0);
+                            setSearchQuery('');
+                            getVisitList(0, rowsPerPage, isConfirmed, '');
+                        }}
+                        titleSearchBtn={'Search Visit'}
+                        titleClearBtn={'Clear search list'}
                     />
-                </FormControl>
+                </Grid>
 
                 <Grid sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-                    <IconButton title="Print Medicine List">
+                    <IconButton title="Print Visit List">
                         <PrintIcon />
                     </IconButton>
                 </Grid>
             </Grid>
 
-            <Paper sx={{ width: '100%', overflow: 'hidden', mt: 2, p: 2 }}>
-                <Grid container direction={'row'}>
-                    <Grid item lg={2}>
-                        <Box sx={{ width: 40, height: 40, backgroundColor: '#f0f0f0' }} />
+            {/* --------------------------  Meeting Card  ------------------------- */}
+            {!!visitList &&
+                visitList?.items?.map((visit) => (
+                    <MeetingCard
+                        key={visit?.meetinglink}
+                        visit={visit}
+                        onClickPatientProfile={() => handlePatientProfile(visit?.patient_NationalID)}
+                        onClickStart={() => {}}
+                        onClickReschedule={() => {}}
+                        onClickCancel={() => {
+                            setCancel({ ...cancel, modalOpen: true, data: visit });
+                        }}
+                        onClickVitalSign={() => {}}
+                        onClickHistory={() => setHistoryModal(true)}
+                        onClickLabReports={() => {}}
+                        onClickUploadDoc={() => {}}
+                        onChangeConfirm={(e) => handleConfirmVisit(e.target.checked, visit)}
+                    />
+                ))}
 
-                        <FormControlLabel control={<Switch />} label="Unconfirmed" />
-                    </Grid>
-
-                    <Grid item lg={3.5} sx={{ backgroundColor: 'yellow' }}>
-                        <Typography>Hello</Typography>
-                    </Grid>
-
-                    <Grid item lg={3.5} sx={{ backgroundColor: 'green' }}>
-                        <Typography>Hello</Typography>
-                    </Grid>
-
-                    <Grid item lg={3} sx={{ backgroundColor: 'gray' }}>
-                        <Typography>Hello</Typography>
-                    </Grid>
+            {loading && (
+                <Grid sx={styles.loadingContainer}>
+                    <CircularProgress size={35} color="inherit" />
                 </Grid>
-            </Paper>
+            )}
+            {!!error && (
+                <Grid sx={styles.loadingContainer}>
+                    <Typography>{error?.response?.data?.message ?? error?.message}</Typography>
+                </Grid>
+            )}
+            {searchQuery?.length > 0 && visitList?.length == 0 && (
+                <Grid sx={styles.loadingContainer}>
+                    <Typography sx={{ fontSize: 16, fontWeight: '600' }}>Does not match any results!</Typography>
+                </Grid>
+            )}
 
-            <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-                {/* <TablePagination
+            {/* ---------------------------- Pagination ----------------------- */}
+            {!!visitList && visitList?.items?.length > 0 && (
+                <TablePagination
                     rowsPerPageOptions={[5, 10, 20]}
                     component="div"
                     count={count}
@@ -199,17 +285,112 @@ export default function Lists() {
                     page={page}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                /> */}
-            </Paper>
+                />
+            )}
+
+            {/* --------------------------  Modal for Showing Patient Info  ------------------------- */}
+            <ModalCustom open={patient.modalOpen} title={'Patient Info'}>
+                <Box sx={{ width: 330 }}>
+                    {patient?.loading && (
+                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                            <CircularProgress size={30} color="inherit" />
+                        </Box>
+                    )}
+
+                    <IconButton
+                        color="inherit"
+                        onClick={() => setPatient({ ...patient, modalOpen: false, data: null, error: null })}
+                        sx={{ position: 'absolute', top: 10, right: 10 }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+
+                    {!!patient?.data && (
+                        <>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+                                <img alt={'Profile'} src={profileImage(patient?.data?.profileImage)} style={styles.profilePicture} />
+                            </Box>
+
+                            <TextBox
+                                title={'Name'}
+                                subTitle={`${patient?.data?.titles} ${patient?.data?.name} ${patient?.data?.lastName}`}
+                            />
+                            <TextBox title={'Gender'} subTitle={`${patient?.data?.gender}`} />
+                            <TextBox title={'Phone No.'} subTitle={`${patient?.data?.phone}`} />
+                            <TextBox title={'NIC'} subTitle={`${patient?.data?.identificationNo}`} />
+                            <TextBox title={'Date of Birth'} subTitle={moment(patient?.data?.dob).format('MMM DD, YYYY')} />
+                            <TextBox title={'Email'} subTitle={`${patient?.data?.email}`} />
+                            <TextBox title={'Address'} subTitle={`${patient?.data?.address}`} />
+                            <TextBox title={'Guardian Name'} subTitle={`${patient?.data?.guardianName}`} />
+                            <TextBox title={'Guardian Phone'} subTitle={`${patient?.data?.guardianPhone}`} />
+                            <TextBox title={'Active'} subTitle={`${patient?.data?.isActive == true ? 'Yes' : 'No'}`} />
+                            <TextBox title={'In-Hospital'} subTitle={`${patient?.data?.inHospital == true ? 'Yes' : 'No'}`} />
+                        </>
+                    )}
+                </Box>
+            </ModalCustom>
+
+            {/* ------------------------  Modal Cancel Confirmation  -------------------------- */}
+            <ModalConfirmation
+                open={cancel.modalOpen}
+                header={'Cancel Confirmation'}
+                description={'Are you sure, you want to cancel this appointment?'}
+                loading={cancel.loading}
+                onClickNo={() => setCancel({ ...cancel, modalOpen: false, data: null })}
+                onClickYes={() => handleCancelAppointment()}
+            />
+
+            <ModalCustom open={historyModal} title={'Add History'}>
+                <Box sx={{ width: 900 }}>
+                    <HistoryForm />
+                    <Box sx={styles.btnContainer}>
+                        {false ? (
+                            <CircularProgress size={25} color="inherit" />
+                        ) : (
+                            <>
+                                <Button onClick={() => setHistoryModal(false)} variant="text" sx={{ color: 'red' }}>
+                                    Cancel
+                                </Button>
+                                <Button type="submit" variant="text" sx={{ color: COLORS.secondory }}>
+                                    Save
+                                </Button>
+                            </>
+                        )}
+                    </Box>
+                </Box>
+            </ModalCustom>
         </div>
     );
 }
 
 const styles = {
+    loadingContainer: {
+        height: 400,
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    profilePicture: {
+        width: 100,
+        height: 100,
+        borderRadius: 20,
+        backgroundColor: '#d5d5d5',
+        alignSelf: 'center'
+    },
     btnContainer: {
         display: 'flex',
         direction: 'row',
         gap: 1,
         justifyContent: 'flex-end'
     }
+};
+
+const TextBox = ({ title, subTitle }) => {
+    return (
+        <Box sx={{ display: 'flex', my: 1 }}>
+            <Typography sx={{ width: '45%' }}>{title}</Typography>
+            <Typography>{subTitle ?? '--'}</Typography>
+        </Box>
+    );
 };

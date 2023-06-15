@@ -22,6 +22,7 @@ import {
     IconWheelchair,
     IconUser
 } from '@tabler/icons';
+import { useNavigate } from 'react-router';
 
 // ==============================|| DEFAULT DASHBOARD ||============================== //
 
@@ -30,6 +31,8 @@ const Dashboard = () => {
     useEffect(() => {
         setLoading(false);
     }, []);
+
+    const navigate = useNavigate();
 
     return (
         <Grid container spacing={gridSpacing}>
@@ -109,16 +112,36 @@ const Dashboard = () => {
             <Grid item xs={12}>
                 <Grid container spacing={gridSpacing}>
                     <Grid item sm={6} xs={12} md={6} lg={3}>
-                        <TotalIncomeLightCard title={'Add Patient'} icon={<IconWheelchair fontSize="inherit" />} isLoading={isLoading} />
+                        <TotalIncomeLightCard
+                            onClick={() => navigate('/patients/add')}
+                            title={'Add Patient'}
+                            icon={<IconWheelchair fontSize="inherit" />}
+                            isLoading={isLoading}
+                        />
                     </Grid>
                     <Grid item sm={6} xs={12} md={6} lg={3}>
-                        <TotalIncomeDarkCard title={'Add Physician'} icon={<IconStethoscope fontSize="inherit" />} isLoading={isLoading} />
+                        <TotalIncomeDarkCard
+                            onClick={() => navigate('/physicians/add')}
+                            title={'Add Physician'}
+                            icon={<IconStethoscope fontSize="inherit" />}
+                            isLoading={isLoading}
+                        />
                     </Grid>
                     <Grid item sm={6} xs={12} md={6} lg={3}>
-                        <TotalIncomeLightCard title={'Add Receptionist'} icon={<IconUser fontSize="inherit" />} isLoading={isLoading} />
+                        <TotalIncomeLightCard
+                            onClick={() => navigate('/receptionists/add')}
+                            title={'Add Receptionist'}
+                            icon={<IconUser fontSize="inherit" />}
+                            isLoading={isLoading}
+                        />
                     </Grid>
                     <Grid item sm={6} xs={12} md={6} lg={3}>
-                        <TotalIncomeDarkCard title={'Add Nurse'} icon={<IconNurse fontSize="inherit" />} isLoading={isLoading} />
+                        <TotalIncomeDarkCard
+                            onClick={() => navigate('/nurses/add')}
+                            title={'Add Nurse'}
+                            icon={<IconNurse fontSize="inherit" />}
+                            isLoading={isLoading}
+                        />
                     </Grid>
                 </Grid>
             </Grid>
