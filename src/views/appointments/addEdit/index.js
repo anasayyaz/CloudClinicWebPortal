@@ -47,23 +47,9 @@ export default function AddEdit() {
 
     const navigate = useNavigate();
 
-    const {
-        data: patientDataList,
-        loading: loadingpatientDataList,
-        error: errorpatientDataList,
-        refetch: refetchpatientDataList
-    } = useFetch(`${BASE_URL}api/patient/patientSelectList?pageNumber=1&pageSize=100&QuerySearch=`);
-
-    const {
-        data: physicianDataList,
-        loading: loadingphysicianDataList,
-        error: errorphysicianDataList,
-        refetch: refetchphysicianDataList
-    } = useFetch(`${BASE_URL}api/physician/physicianSelectList?pageNumber=1&pageSize=100&QuerySearch=`);
-
     return (
         <div>
-            <Scheduler patientData={patientDataList} physicianData={physicianDataList} />
+            <Scheduler />
         </div>
     );
 }

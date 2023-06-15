@@ -6,9 +6,9 @@ const DateTimePicker = ({ name, ...otherProps }) => {
     const [field, meta] = useField(name);
 
     const configDateTimePicker = {
+        type: 'date',
         ...field,
         ...otherProps,
-        type: 'date',
         variant: 'standard',
         fullWidth: true,
         InputLabelProps: {
