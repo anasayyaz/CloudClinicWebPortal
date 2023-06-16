@@ -55,12 +55,13 @@ export default function Scheduler() {
 
     const [visitList, setVisitList] = useState(null);
     const [modalAdd, setModalAdd] = useState({ open: false, value: null });
-    const [modalEdit, setModalEdit] = useState({ open: false, value: null });
+    const [modalEdit, setModalEdit] = useState({ open: false, value: null, data: null });
     const [currentDate, setCurrentDate] = React.useState(new Date().toLocaleDateString('en-CA'));
     const [newStartDatePicker, setNewStartDatePicker] = React.useState(new Date().toLocaleDateString('en-CA'));
     const [loadingRequest, setLoadingRequest] = useState(false);
     const [Patient, setPatient] = React.useState(null);
     const [Consultant, setConsultant] = React.useState(null);
+
     const [calendarEvent, setCalendarEvent] = useState({
         Id: '',
         Title: '',
@@ -97,7 +98,7 @@ export default function Scheduler() {
         });
         alert(start);
         alert(end);
-        setModalEdit({ open: true, value: 'add' });
+        setModalEdit({ open: true, value: 'add', data: event });
     };
     const getVisitList = async () => {
         try {
@@ -291,7 +292,7 @@ export default function Scheduler() {
             <ModalCustom open={modalEdit.open} title={'Edit Appointment'}>
                 <Formik
                     initialValues={{
-                        title: '',
+                        title: modalEdit?.data?.title,
                         summaryNotes: '',
                         startDate: '',
                         endDate: '',
@@ -343,7 +344,7 @@ export default function Scheduler() {
                                     ) : ( */}
                                     <>
                                         <Button
-                                            onClick={() => setModalEdit({ open: false, value: null })}
+                                            onClick={() => setModalEdit({ open: false, value: null, data: null })}
                                             variant="text"
                                             sx={{ color: 'red' }}
                                         >
@@ -371,5 +372,11 @@ const styles = {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    btnContainer: {
+        display: 'flex',
+        direction: 'row',
+        gap: 1,
+        justifyContent: 'flex-end'
     }
 };

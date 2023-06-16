@@ -3,6 +3,8 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import MeetingTitle from 'assets/images/icons/meeting-title.svg';
 import VideoCameraFrontIcon from '@mui/icons-material/VideoCameraFront';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
+import MoreTimeIcon from '@mui/icons-material/MoreTime';
+import CancelIcon from '@mui/icons-material/Cancel';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import React from 'react';
 import { COLORS } from 'constants/colors';
@@ -117,13 +119,14 @@ export default function MeetingCard({
                             <Button
                                 fullWidth
                                 variant="contained"
-                                sx={{ backgroundColor: 'green', '&: hover': { backgroundColor: '#265427' } }}
+                                sx={{ backgroundColor: '#7ac74f', '&: hover': { backgroundColor: '#265427' } }}
                             >
-                                Start
+                                <VideoCameraFrontIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} /> Start
                             </Button>
                         </Grid>
                         <Grid item lg={4} md={4} sm={4} xs={4}>
                             <Button fullWidth variant="contained">
+                                <MoreTimeIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} />
                                 Reschedule
                             </Button>
                         </Grid>
@@ -131,9 +134,10 @@ export default function MeetingCard({
                             <Button
                                 fullWidth
                                 variant="contained"
-                                sx={{ backgroundColor: '#eb020e', '&: hover': { background: '#c7020c' } }}
+                                sx={{ backgroundColor: '#FF2E2E', '&: hover': { background: '#c7020c' } }}
                                 onClick={onClickCancel}
                             >
+                                <CancelIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} />
                                 Cancel
                             </Button>
                         </Grid>
