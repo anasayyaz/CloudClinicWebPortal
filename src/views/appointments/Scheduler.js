@@ -56,8 +56,8 @@ export default function Scheduler() {
     const [visitList, setVisitList] = useState(null);
     const [modalAdd, setModalAdd] = useState({ open: false, value: null });
     const [modalEdit, setModalEdit] = useState({ open: false, value: null, data: null });
-    const [currentDate, setCurrentDate] = React.useState(new Date().toLocaleDateString('en-CA'));
-    const [newStartDatePicker, setNewStartDatePicker] = React.useState(new Date().toLocaleDateString('en-CA'));
+    const [currentDate, setCurrentDate] = React.useState(new Date().toLocaleDateString('en-US'));
+    const [newStartDatePicker, setNewStartDatePicker] = React.useState(new Date().toLocaleDateString('en-US'));
     const [loadingRequest, setLoadingRequest] = useState(false);
     const [Patient, setPatient] = React.useState(null);
     const [Consultant, setConsultant] = React.useState(null);
@@ -87,7 +87,7 @@ export default function Scheduler() {
             StartDate: start,
             EndDate: end
         });
-
+        alert(Patient);
         setModalAdd({ open: true, value: 'add' });
     };
     const editEvent = (event, start, end, allDay) => {
@@ -294,7 +294,7 @@ export default function Scheduler() {
                     initialValues={{
                         title: modalEdit?.data?.title,
                         summaryNotes: '',
-                        startDate: '',
+                        startDate: moment.parseZone(modalEdit?.data?.start).format(),
                         endDate: '',
                         amount: ''
                     }}
