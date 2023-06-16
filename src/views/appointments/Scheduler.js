@@ -197,7 +197,20 @@ export default function Scheduler() {
             setLoadingRequest(false);
         }
     };
-
+    const eventStyleGetter = (event) => {
+        var style = {
+            backgroundColor: event.hexColor,
+            borderRadius: '0px',
+            opacity: 0.8,
+            color: 'white',
+            border: '0px',
+            borderRadius: '5px',
+            display: 'block'
+        };
+        return {
+            style: style
+        };
+    };
     return (
         <div style={{ margin: '5px' }}>
             {!!visitList && (
@@ -213,7 +226,7 @@ export default function Scheduler() {
                     onSelectSlot={(e) => addEvent(e, e.start, e.end)}
                     // resizable
                     style={{ height: '100vh', backgroundColor: '#ffffff' }}
-                    // eventPropGetter={eventStyleGetter}
+                    eventPropGetter={(e) => eventStyleGetter(e)}
                     onSelectEvent={(e) => editEvent(e, e.start, e.end)}
                 />
             )}

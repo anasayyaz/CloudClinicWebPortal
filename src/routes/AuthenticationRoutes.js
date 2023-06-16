@@ -20,15 +20,15 @@ const AuthenticationRoutes = {
         {
             path: '/',
             element: <Navigate to="/login" replace={true} />
-        },
+        }
         // {
         //     path: '/register',
         //     element: <Register />
         // },
-        {
-            path: '*',
-            element: <Navigate to="/login" replace={true} />
-        }
+        // {
+        //     path: '*',
+        //     element: <Navigate to="/login" replace={true} />
+        // }
     ]
 };
 
