@@ -61,6 +61,7 @@ import SearchField from 'ui-component/FormUI/SearchField.js';
 import { getDetail } from 'services/getDetail';
 import moment from 'moment/moment';
 import HistoryForm from 'ui-component/HistoryForm';
+import { useRef } from 'react';
 
 export default function Lists() {
     const { user } = useSelector((state) => state?.user);
@@ -93,7 +94,7 @@ export default function Lists() {
     const [patient, setPatient] = useState({ loading: false, error: null, data: null, modalOpen: false });
     const [cancel, setCancel] = useState({ loading: false, error: null, data: null, modalOpen: false });
 
-    const [historyModal, setHistoryModal] = useState(false);
+    const [historyModal, setHistoryModal] = useState({ open: false, loading: false, error: null });
 
     const getVisitList = async (pageNumber, pageSize, isConfirm, searchValue) => {
         try {
@@ -192,6 +193,52 @@ export default function Lists() {
         }
     };
 
+    // -----------------------  Set Updated Histoy to History State
+
+    const [historyLoading, setHistoryLoading] = useState(false);
+    const historyRef = useRef({});
+
+    const handleHistory = async (visit) => {
+        setHistoryModal({ open: true, loading: true, error: null });
+        try {
+            const res = await axios({
+                method: 'get',
+                url: `${BASE_URL}api/History/patientLastHistory/${visit?.patient_NationalID}`,
+                headers: {
+                    Authorization: `Bearer ${user?.token}`
+                }
+            });
+
+            historyRef.current = res?.data;
+            setHistoryModal({ open: true, loading: false, error: null });
+        } catch (error) {
+            setHistoryModal({ open: true, loading: false, error: error });
+        }
+    };
+
+    const handlePosttHistory = async () => {
+        setHistoryLoading(true);
+        try {
+            const res = await axios({
+                method: 'post',
+                url: `${BASE_URL}api/History`,
+                data: historyRef?.current,
+                headers: {
+                    Authorization: `Bearer ${user?.token}`
+                }
+            });
+
+            if (res?.data) {
+                return toast.error('History added successfully');
+            }
+        } catch (error) {
+            return toast.error(error?.response?.data ?? error?.message);
+        } finally {
+            setHistoryLoading(false);
+            setHistoryModal({ open: false, loading: false, error: null });
+        }
+    };
+
     return (
         <div>
             {/* -----------------  Main Header  -------------------------- */}
@@ -252,7 +299,7 @@ export default function Lists() {
                             setCancel({ ...cancel, modalOpen: true, data: visit });
                         }}
                         onClickVitalSign={() => {}}
-                        onClickHistory={() => setHistoryModal(true)}
+                        onClickHistory={() => handleHistory(visit)}
                         onClickLabReports={() => {}}
                         onClickUploadDoc={() => {}}
                         onChangeConfirm={(e) => handleConfirmVisit(e.target.checked, visit)}
@@ -340,23 +387,45 @@ export default function Lists() {
                 onClickYes={() => handleCancelAppointment()}
             />
 
-            <ModalCustom open={historyModal} title={'Add History'}>
+            <ModalCustom open={historyModal?.open} title={'Add History'}>
                 <Box sx={{ width: 900 }}>
-                    <HistoryForm />
-                    <Box sx={styles.btnContainer}>
-                        {false ? (
-                            <CircularProgress size={25} color="inherit" />
-                        ) : (
-                            <>
-                                <Button onClick={() => setHistoryModal(false)} variant="text" sx={{ color: 'red' }}>
-                                    Cancel
-                                </Button>
-                                <Button type="submit" variant="text" sx={{ color: COLORS.secondory }}>
-                                    Save
-                                </Button>
-                            </>
-                        )}
-                    </Box>
+                    {historyModal?.loading ? (
+                        <Box sx={styles.loadingContainer}>
+                            <CircularProgress size={35} color="inherit" />
+                        </Box>
+                    ) : (
+                        <>
+                            <HistoryForm
+                                data={historyRef.current}
+                                onUpdate={(val) => {
+                                    historyRef.current = val;
+                                }}
+                            />
+
+                            <Box sx={styles.btnContainer}>
+                                {historyLoading ? (
+                                    <CircularProgress size={25} color="inherit" />
+                                ) : (
+                                    <>
+                                        <Button
+                                            onClick={() => setHistoryModal({ open: false, loading: false, error: null })}
+                                            variant="text"
+                                            sx={{ color: 'red' }}
+                                        >
+                                            Cancel
+                                        </Button>
+
+                                        {!!historyModal?.error == false && (
+                                            <Button onClick={handlePosttHistory} variant="text" sx={{ color: COLORS.secondory }}>
+                                                Save
+                                            </Button>
+                                        )}
+                                    </>
+                                )}
+                            </Box>
+                        </>
+                    )}
+                    {!!error && <Typography>{error?.response?.data?.message || error?.response?.data || error?.message}</Typography>}
                 </Box>
             </ModalCustom>
         </div>
@@ -365,7 +434,7 @@ export default function Lists() {
 
 const styles = {
     loadingContainer: {
-        height: 400,
+        height: 373,
         width: '100%',
         display: 'flex',
         justifyContent: 'center',

@@ -4,7 +4,7 @@ import React from 'react';
 
 export default function ProfileCard1({ profileImage, name, role, phoneNumber, onClickResetPassword, isActive, onChangeSwitch }) {
     return (
-        <Grid item lg={3} md={4} sm={6} xs={12} sx={{ minWidth: 270 }}>
+        <Grid item lg={3} md={4} sm={6} xs={12}>
             <Grid sx={styles.cardContainer}>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <img alt={'Profile'} src={profileImage} style={styles.cardProfilePicture} />
@@ -59,7 +59,11 @@ const styles = {
         marginBottom: 1,
         fontSize: 17,
         fontWeight: 'bold',
-        textTransform: 'capitalize'
+        textTransform: 'capitalize',
+        display: '-webkit-box',
+        overflow: 'hidden',
+        WebkitBoxOrient: 'vertical',
+        WebkitLineClamp: 1
     },
     textContainer: {
         display: 'flex',
