@@ -4,102 +4,40 @@ import { Form, Formik } from 'formik';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 // -----------------  Importing Icons
-import { IconPlus } from '@tabler/icons';
-import PrintIcon from '@mui/icons-material/Print';
 
 // -----------------  Importing Constants
 import { COLORS } from 'constants/colors';
 import { BASE_URL } from 'constants/baseUrl';
 
 // -----------------  Utilis
-import { profileImage } from 'utils/fetchImage';
 import Autocomplete from '@mui/material/Autocomplete';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import SearchField from 'ui-component/FormUI/SearchField.js';
 import useFetch from 'hooks/useFetch';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import ModalCustom from 'ui-component/modals/ModalCustom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import {
-    Box,
-    Button,
-    CircularProgress,
-    FormControl,
-    Grid,
-    IconButton,
-    InputAdornment,
-    InputLabel,
-    MenuItem,
-    OutlinedInput,
-    Select,
-    TextField,
-    ToggleButton,
-    ToggleButtonGroup,
-    Typography
-} from '@mui/material';
+import { Box, Button, CircularProgress, Grid, TextField } from '@mui/material';
 import Textfield from 'ui-component/FormUI/Textfield';
 import DateTimePicker from 'ui-component/FormUI/DateTimePicker';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { current } from '@reduxjs/toolkit';
 const localizer = momentLocalizer(moment);
+
 export default function Scheduler() {
     const { user } = useSelector((state) => state?.user);
 
-    const navigate = useNavigate();
-
     const [visitList, setVisitList] = useState(null);
-    const [modalAdd, setModalAdd] = useState({ open: false, value: null });
-    const [modalEdit, setModalEdit] = useState({ open: false, value: null, data: null });
-    const [currentDate, setCurrentDate] = React.useState(new Date().toLocaleDateString('en-CA'));
-    const [newStartDatePicker, setNewStartDatePicker] = React.useState(new Date().toLocaleDateString('en-CA'));
-    const [loadingRequest, setLoadingRequest] = useState(false);
-    const [Patient, setPatient] = React.useState(null);
-    const [Consultant, setConsultant] = React.useState(null);
-
-    const [calendarEvent, setCalendarEvent] = useState({
-        Id: '',
-        Title: '',
-        SummaryNotes: '',
-        StartDate: '',
-        EndDate: '',
-        consultant_NationalID: '',
-        patient_NationalID: '',
-        calendarID: ''
-    });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    function handleStartDateChange(e) {
-        if (e < currentDate) {
-            setStartDatePast(true);
-        } else {
-            setNewStartDatePicker(e);
-            // console.log(e);
-        }
-    }
-    const addEvent = (event, start, end, allDay) => {
-        setCalendarEvent({
-            StartDate: start,
-            EndDate: end
-        });
 
-        setModalAdd({ open: true, value: 'add' });
-    };
-    const editEvent = (event, start, end, allDay) => {
-        console.log(event);
-        setCalendarEvent({
-            StartDate: start,
-            EndDate: end
-        });
-        alert(start);
-        alert(end);
-        setModalEdit({ open: true, value: 'add', data: event });
-    };
+    const [selectedPatient, setSelectedPatient] = useState(null);
+    const [selectedPhysician, setSelectedPhysician] = useState(null);
+
+    const [modal, setModal] = useState({ open: false, type: 'add', data: null });
+    const [loadingRequest, setLoadingRequest] = useState(false);
+
     const getVisitList = async () => {
         try {
             setLoading(true);
@@ -121,9 +59,10 @@ export default function Scheduler() {
                 visitObj.start = new Date(item.startDateTime);
                 visitObj.end = new Date(item.endDateTime);
                 visitObj.title = item.title;
-                visitObj.nationalID = item.consultant_NationalID;
                 visitObj.hexColor = item.colorCode;
-                visitObj.physician = item.consultantFirstName;
+                visitObj.consultant_NationalID = item.consultant_NationalID;
+                visitObj.patient_NationalID = item.patient_NationalID;
+                visitObj.meetingtype = item?.meetingtype;
                 if (item.isDeleted === false) {
                     newArr.push(visitObj);
                 }
@@ -159,8 +98,8 @@ export default function Scheduler() {
         try {
             const data = {
                 Title: values.title,
-                Patient_NationalID: Patient,
-                Consultant_NationalID: Consultant,
+                Patient_NationalID: selectedPatient,
+                Consultant_NationalID: selectedPhysician,
                 SummaryNotes: values.title,
                 StartDateTime: moment(values.startDate).format(),
                 EndDateTime: moment(values.endDate).format(),
@@ -189,7 +128,7 @@ export default function Scheduler() {
             getVisitList();
             if (responseCreateAppointment.status == 200);
             {
-                setModalAdd({ open: false, value: 'add' });
+                setModal({ open: false, type: null, data: null });
                 toast.success('Apppointment added successfully');
             }
         } catch (error) {
@@ -197,6 +136,9 @@ export default function Scheduler() {
             setLoadingRequest(false);
         }
     };
+
+    console.log('modal ', modal);
+    console.log(new Date('Fri Jun 16 2023 02:30:00 GMT+0500 (Pakistan Standard Time)').toISOString().slice(0, 16));
 
     return (
         <div style={{ margin: '5px' }}>
@@ -210,154 +152,110 @@ export default function Scheduler() {
                     localizer={localizer}
                     startAccessor="start"
                     endAccessor="end"
-                    onSelectSlot={(e) => addEvent(e, e.start, e.end)}
-                    // resizable
-                    style={{ height: '100vh', backgroundColor: '#ffffff' }}
-                    // eventPropGetter={eventStyleGetter}
-                    onSelectEvent={(e) => editEvent(e, e.start, e.end)}
+                    onSelectSlot={(e) => {
+                        setModal({ open: true, type: 'add', data: e });
+                        setSelectedPatient(null);
+                        setSelectedPhysician(null);
+                    }}
+                    onSelectEvent={(e) => {
+                        setModal({ open: true, type: 'update', data: e });
+                        setSelectedPatient(e?.patient_NationalID);
+                        setSelectedPhysician(e?.consultant_NationalID);
+                    }}
+                    style={{ backgroundColor: '#ffffff' }}
                 />
             )}
-            <ModalCustom open={modalAdd.open} title={'Appointment'}>
+
+            {/* ========================  Modal to Add Slot and Edit Slot  */}
+            <ModalCustom open={modal.open} title={modal.type == 'add' ? 'Add Appointment' : 'Update Appointment'}>
                 <Formik
-                    initialValues={{
-                        title: '',
-                        summaryNotes: '',
-                        startDate: '',
-                        endDate: '',
-                        amount: ''
-                    }}
+                    initialValues={
+                        modal?.type == 'add'
+                            ? {
+                                  title: '',
+                                  summaryNotes: '',
+                                  startDate: !!modal?.data
+                                      ? moment(modal?.data?.start).format('YYYY-MM-DDTHH:mm')
+                                      : new Date().toISOString().slice(0, 16),
+                                  endDate: !!modal?.data
+                                      ? moment(modal?.data?.end).format('YYYY-MM-DDTHH:mm')
+                                      : new Date().toISOString().slice(0, 16),
+                                  amount: ''
+                              }
+                            : {
+                                  title: modal?.data?.title,
+                                  summaryNotes: '',
+                                  startDate: !!modal?.data
+                                      ? moment(modal?.data?.start).format('YYYY-MM-DDTHH:mm')
+                                      : new Date().toISOString().slice(0, 16),
+                                  endDate: !!modal?.data
+                                      ? moment(modal?.data?.end).format('YYYY-MM-DDTHH:mm')
+                                      : new Date().toISOString().slice(0, 16),
+                                  amount: ''
+                              }
+                    }
                     onSubmit={(values, { resetForm }) => handleRequest(values, resetForm)}
                 >
                     <Form>
-                        <Grid container direction="row" spacing={2}>
-                            <Grid item lg={12} md={12} sm={12} xs={12}>
-                                <Textfield name="title" label="Reason" />
-                            </Grid>
+                        <Box sx={{ maxWidth: 400 }}>
+                            <Grid container direction="row" spacing={2}>
+                                <Grid item lg={12} md={12} sm={12} xs={12} mt={2}>
+                                    <Textfield name="title" label="Reason" variant="outlined" />
+                                </Grid>
 
-                            <Grid item lg={12} md={12} sm={12} xs={12}>
-                                <label htmlFor="Patient">{'Patient'}</label>
-                                <Autocomplete
-                                    options={patientDataList}
-                                    getOptionLabel={(patient) => `${patient.name}  ${patient.lastName} - ${patient.phone}`}
-                                    onChange={(event, selected) => {
-                                        setPatient(selected?.nationalID || null);
-                                    }}
-                                    renderInput={(params) => <TextField {...params} variant="outlined" />}
-                                />
-                            </Grid>
+                                <Grid item lg={12} md={12} sm={12} xs={12}>
+                                    <Autocomplete
+                                        options={patientDataList}
+                                        getOptionLabel={(patient) => `${patient?.name}  ${patient?.lastName} - ${patient?.phone}`}
+                                        value={patientDataList?.find((i) => i?.nationalID == selectedPatient)}
+                                        onChange={(event, selected) => {
+                                            setSelectedPatient(selected?.nationalID || null);
+                                        }}
+                                        renderInput={(params) => <TextField {...params} label="Patient" variant="outlined" />}
+                                    />
+                                </Grid>
 
-                            <Grid item lg={12} md={12} sm={12} xs={12}>
-                                <label htmlFor="Consultant">{'Doctor'}</label>
-                                <Autocomplete
-                                    options={physicianDataList}
-                                    getOptionLabel={(physician) => `${physician.name} - ${physician.phone} - ${physician.speciality}`}
-                                    onChange={(event, selected) => {
-                                        setConsultant(selected?.nationalID || null);
-                                    }}
-                                    renderInput={(params) => <TextField {...params} variant="outlined" />}
-                                />
-                            </Grid>
+                                <Grid item lg={12} md={12} sm={12} xs={12}>
+                                    <Autocomplete
+                                        options={physicianDataList}
+                                        getOptionLabel={(physician) => `${physician?.name}  ${physician?.phone} - ${physician?.speciality}`}
+                                        value={physicianDataList?.find((i) => i?.nationalID == selectedPhysician)}
+                                        onChange={(event, selected) => {
+                                            setSelectedPhysician(selected?.nationalID || null);
+                                        }}
+                                        renderInput={(params) => <TextField {...params} label="Physician" variant="outlined" />}
+                                    />
+                                </Grid>
 
-                            <Grid item lg={12} md={12} sm={12} xs={12}>
-                                <DateTimePicker name="startDate" label="Start Time" type="datetime-local" />
-                            </Grid>
+                                <Grid item lg={12} md={12} sm={12} xs={12}>
+                                    <DateTimePicker name="startDate" label="Start Date Time" type="datetime-local" variant="outlined" />
+                                </Grid>
 
-                            <Grid item lg={12} md={12} sm={12} xs={12}>
-                                <DateTimePicker name="endDate" label="Date of Birth" type="datetime-local" />
+                                <Grid item lg={12} md={12} sm={12} xs={12}>
+                                    <DateTimePicker name="endDate" label="End Date Time" type="datetime-local" variant="outlined" />
+                                </Grid>
+                                <Grid item lg={12} md={12} sm={12} xs={12} mt={1}>
+                                    <Box sx={styles.btnContainer}>
+                                        {loadingRequest ? (
+                                            <CircularProgress size={25} color="inherit" />
+                                        ) : (
+                                            <>
+                                                <Button
+                                                    onClick={() => setModal({ open: false, type: null, data: null })}
+                                                    variant="text"
+                                                    sx={{ color: 'red' }}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                                <Button type="submit" variant="text" sx={{ color: COLORS.secondory }}>
+                                                    {modal.type == 'add' ? 'Save' : 'Update'}
+                                                </Button>
+                                            </>
+                                        )}
+                                    </Box>
+                                </Grid>
                             </Grid>
-                            <Grid item lg={12} md={12} sm={12} xs={12} mt={1}>
-                                <Box sx={styles.btnContainer}>
-                                    {loadingRequest ? (
-                                        <CircularProgress size={25} color="inherit" />
-                                    ) : (
-                                        <>
-                                            <Button
-                                                onClick={() => setModalAdd({ open: false, value: null })}
-                                                variant="text"
-                                                sx={{ color: 'red' }}
-                                            >
-                                                Cancel
-                                            </Button>
-                                            <Button type="submit" variant="text" sx={{ color: COLORS.secondory }}>
-                                                {modalAdd.value == 'add' ? 'Save' : 'Update'}
-                                            </Button>
-                                        </>
-                                    )}
-                                </Box>
-                            </Grid>
-                        </Grid>
-                    </Form>
-                </Formik>
-            </ModalCustom>
-            <ModalCustom open={modalEdit.open} title={'Edit Appointment'}>
-                <Formik
-                    initialValues={{
-                        title: modalEdit?.data?.title,
-                        summaryNotes: '',
-                        startDate: '',
-                        endDate: '',
-                        amount: ''
-                    }}
-                    onSubmit={(values, { resetForm }) => handleRequest(values, resetForm)}
-                >
-                    <Form>
-                        <Grid container direction="row" spacing={2}>
-                            <Grid item lg={12} md={12} sm={12} xs={12}>
-                                <Textfield name="title" label="Reason" />
-                            </Grid>
-
-                            <Grid item lg={12} md={12} sm={12} xs={12}>
-                                <label htmlFor="Patient">{'Patient'}</label>
-                                <Autocomplete
-                                    options={patientDataList}
-                                    getOptionLabel={(patient) => `${patient.name}  ${patient.lastName} - ${patient.phone}`}
-                                    onChange={(event, selected) => {
-                                        setPatient(selected?.nationalID || null);
-                                    }}
-                                    renderInput={(params) => <TextField {...params} variant="outlined" />}
-                                />
-                            </Grid>
-
-                            <Grid item lg={12} md={12} sm={12} xs={12}>
-                                <label htmlFor="Consultant">{'Doctor'}</label>
-                                <Autocomplete
-                                    options={physicianDataList}
-                                    getOptionLabel={(physician) => `${physician.name} - ${physician.phone} - ${physician.speciality}`}
-                                    onChange={(event, selected) => {
-                                        setConsultant(selected?.nationalID || null);
-                                    }}
-                                    renderInput={(params) => <TextField {...params} variant="outlined" />}
-                                />
-                            </Grid>
-
-                            <Grid item lg={12} md={12} sm={12} xs={12}>
-                                <DateTimePicker name="startDate" label="Start Time" type="datetime-local" />
-                            </Grid>
-
-                            <Grid item lg={12} md={12} sm={12} xs={12}>
-                                <DateTimePicker name="endDate" label="Date of Birth" type="datetime-local" />
-                            </Grid>
-                            <Grid item lg={12} md={12} sm={12} xs={12} mt={1}>
-                                <Box sx={styles.btnContainer}>
-                                    {/* {loadingRequest ? (
-                                        <CircularProgress size={25} color="inherit" />
-                                    ) : ( */}
-                                    <>
-                                        <Button
-                                            onClick={() => setModalEdit({ open: false, value: null, data: null })}
-                                            variant="text"
-                                            sx={{ color: 'red' }}
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button type="submit" variant="text" sx={{ color: COLORS.secondory }}>
-                                            {modalEdit.value == 'add' ? 'Save' : 'Update'}
-                                        </Button>
-                                    </>
-                                    {/* )} */}
-                                </Box>
-                            </Grid>
-                        </Grid>
+                        </Box>
                     </Form>
                 </Formik>
             </ModalCustom>

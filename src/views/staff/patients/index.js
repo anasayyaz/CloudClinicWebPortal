@@ -73,7 +73,7 @@ export default function Patients() {
         setWardId(e.target.value);
     };
 
-    const { data: wardList, loading: loadingWardList, error: errorWardList, refetch: refetchWardList } = useFetch(`${BASE_URfL}api/ward`);
+    const { data: wardList, loading: loadingWardList, error: errorWardList, refetch: refetchWardList } = useFetch(`${BASE_URL}api/ward`);
 
     const getPatientList = async (pageNumber, pageSize, hospital, ward, searchValue) => {
         try {

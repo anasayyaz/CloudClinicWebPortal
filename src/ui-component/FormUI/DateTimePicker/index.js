@@ -7,9 +7,9 @@ const DateTimePicker = ({ name, ...otherProps }) => {
 
     const configDateTimePicker = {
         type: 'date',
+        variant: 'standard',
         ...field,
         ...otherProps,
-        variant: 'standard',
         fullWidth: true,
         InputLabelProps: {
             shrink: true

@@ -6,10 +6,10 @@ const TextfieldWrapper = ({ name, ...otherProps }) => {
     const [field, mata] = useField(name);
 
     const configTextfield = {
+        variant: 'standard',
         ...field,
         ...otherProps,
-        fullWidth: true,
-        variant: 'standard'
+        fullWidth: true
     };
 
     if (mata && mata.touched && mata.error) {
