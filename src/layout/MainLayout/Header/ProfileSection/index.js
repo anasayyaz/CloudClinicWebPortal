@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import {
@@ -62,6 +61,7 @@ const ProfileSection = () => {
     const handleLogout = async () => {
         localStorage.clear();
         dispatch(saveUserData(null));
+        navigate('/login');
     };
 
     const handleClose = (event) => {

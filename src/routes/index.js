@@ -35,6 +35,7 @@ export default function ThemeRoutes() {
     };
 
     let isLoggedIn = !!user;
+    console.log(isLoggedIn);
     let HomeRoute = showRoute[role];
     let RootRoute = isLoggedIn ? HomeRoute : AuthenticationRoutes;
 
