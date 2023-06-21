@@ -1,67 +1,45 @@
 import * as React from 'react';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
 import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
     Box,
     Button,
     CircularProgress,
-    Divider,
     FormControl,
     FormControlLabel,
     Grid,
     IconButton,
-    InputAdornment,
-    InputLabel,
     MenuItem,
-    OutlinedInput,
+    Radio,
+    RadioGroup,
     Select,
-    Switch,
     TextField,
-    ToggleButton,
-    ToggleButtonGroup,
     Typography
 } from '@mui/material';
 
-import BorderColorIcon from '@mui/icons-material/BorderColor';
-import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import { COLORS } from 'constants/colors';
-import { IconPlus } from '@tabler/icons';
-import SearchIcon from '@mui/icons-material/Search';
 import PrintIcon from '@mui/icons-material/Print';
-import ViewListIcon from '@mui/icons-material/ViewList';
-import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { profileImage } from 'utils/fetchImage';
 import { useState } from 'react';
 import { BASE_URL } from 'constants/baseUrl';
-import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import axios from 'axios';
-import ProfileCard from 'ui-component/cards/ProfileCard';
 import { useSelector } from 'react-redux';
 import ModalCustom from 'ui-component/modals/ModalCustom';
-import { Form, Formik } from 'formik';
-import Textfield from 'ui-component/FormUI/Textfield';
-import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ModalConfirmation from 'ui-component/modals/ModalConfirmation';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import MeetingTitle from 'assets/images/icons/meeting-title.svg';
-import VideoCameraFrontIcon from '@mui/icons-material/VideoCameraFront';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import MeetingCard from 'ui-component/cards/MeetingCard';
 import SearchField from 'ui-component/FormUI/SearchField.js';
 import { getDetail } from 'services/getDetail';
 import moment from 'moment/moment';
 import HistoryForm from 'ui-component/HistoryForm';
 import { useRef } from 'react';
+import { getReportByVisit } from 'services/labReports';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export default function Lists() {
     const { user } = useSelector((state) => state?.user);
@@ -95,6 +73,8 @@ export default function Lists() {
     const [cancel, setCancel] = useState({ loading: false, error: null, data: null, modalOpen: false });
 
     const [historyModal, setHistoryModal] = useState({ open: false, loading: false, error: null });
+    const [viewReportsModal, setViewReportsModal] = useState({ open: false, loading: false, error: null, data: null });
+    const [uploadReportsModal, setUploadReportsModal] = useState({ open: false, loading: false, error: null, data: null });
 
     const getVisitList = async (pageNumber, pageSize, isConfirm, searchValue) => {
         try {
@@ -141,6 +121,15 @@ export default function Lists() {
     //--------------------  Confirm Visit  ------------------------------
     const handleConfirmVisit = async (visitConfirm, visit) => {
         try {
+            const updatedVisitList = visitList.items.map((obj) => {
+                if (obj.id === visit?.id) {
+                    obj.isConfirm = !obj.isConfirm; // change isConfirm Status of visitID that matched
+                }
+                return obj;
+            });
+            let newVisitList = { items: updatedVisitList };
+            setVisitList(newVisitList);
+
             const res = await axios({
                 method: 'put',
                 url: `${BASE_URL}api/visit/confirmVisit/${visit?.id}`,
@@ -149,17 +138,6 @@ export default function Lists() {
                     Authorization: `Bearer ${user?.token}`
                 }
             });
-
-            if (res?.data) {
-                const updatedVisitList = visitList.items.map((obj) => {
-                    if (obj.id === visit?.id) {
-                        obj.isConfirm = !obj.isConfirm; // change isConfirm Status of visitID that matched
-                    }
-                    return obj;
-                });
-                let newVisitList = { items: updatedVisitList };
-                setVisitList(newVisitList);
-            }
         } catch (error) {
             return toast.error(error?.response?.data ?? error?.message);
         }
@@ -216,7 +194,7 @@ export default function Lists() {
         }
     };
 
-    const handlePosttHistory = async () => {
+    const handlePostHistory = async () => {
         setHistoryLoading(true);
         try {
             const res = await axios({
@@ -236,6 +214,76 @@ export default function Lists() {
         } finally {
             setHistoryLoading(false);
             setHistoryModal({ open: false, loading: false, error: null });
+        }
+    };
+
+    // --------------------------  View Reports
+    const [selectedImage, setSelectedImage] = useState({ open: false, image: null });
+
+    const handleViewReports = async (visit) => {
+        setViewReportsModal({ ...viewReportsModal, open: true, loading: true });
+        try {
+            const res = await getReportByVisit(visit?.id);
+            setViewReportsModal({ ...viewReportsModal, open: true, loading: false, data: res });
+        } catch (error) {
+            setViewReportsModal({ ...viewReportsModal, open: true, loading: false, error: error });
+        }
+    };
+
+    // --------------------------  Upload Reports
+
+    const [uploadedFile, setUploadedFile] = useState(null);
+    const [labReportType, setLabReportType] = useState('X-Ray');
+
+    const handleOnChangeUploadReport = async (file) => {
+        let imageName = `${user?.userId}_` + Date.now() + `_${user?.domain}.` + file?.[0]?.name?.split('.').pop();
+
+        let image = {
+            name: imageName,
+            image: file?.[0],
+            url: URL.createObjectURL(file?.[0])
+        };
+
+        setUploadedFile(image);
+    };
+
+    const handleUploadReport = async () => {
+        setUploadReportsModal({ ...uploadReportsModal, open: true, loading: true });
+        try {
+            let formdata = new FormData();
+            console.log('uploadedFile ', uploadedFile?.image, uploadedFile?.name);
+            formdata.append('body', uploadedFile?.image, uploadedFile?.name);
+
+            const resUploadFile = await axios.post(`${BASE_URL}api/uploadFile`, formdata, {
+                headers: { Authorization: `Bearer ${user?.token}`, 'Content-Type': 'multipart/form-data;', Accept: 'application/json' }
+            });
+
+            if (resUploadFile?.data) {
+                const uploadTestRes = await axios.post(
+                    `${BASE_URL}api/labtest`,
+                    {
+                        VisitID: uploadReportsModal?.data?.id,
+                        ImagePath: uploadedFile?.name,
+                        ImageName: uploadedFile?.name,
+                        Patient_NationalID: uploadReportsModal?.data?.patient_NationalID,
+                        Description: labReportType == 'Other' ? description : labReportType,
+                        Type: labReportType,
+                        IsLatest: true
+                    },
+                    {
+                        headers: { Authorization: `Bearer ${user?.token}`, Accept: 'application/json' }
+                    }
+                );
+
+                if (uploadTestRes?.data) {
+                    setUploadedFile(null);
+                    return toast.success('Report Uploaded Successfully');
+                }
+            }
+        } catch (error) {
+            return toast.error(error?.response?.data ?? error?.message);
+        } finally {
+            setUploadReportsModal({ data: null, open: false, loading: false });
         }
     };
 
@@ -300,8 +348,8 @@ export default function Lists() {
                         }}
                         onClickVitalSign={() => {}}
                         onClickHistory={() => handleHistory(visit)}
-                        onClickLabReports={() => {}}
-                        onClickUploadDoc={() => {}}
+                        onClickViewReports={() => handleViewReports(visit)}
+                        onClickUploadReports={() => setUploadReportsModal({ ...uploadReportsModal, open: true, data: visit })}
                         onChangeConfirm={(e) => handleConfirmVisit(e.target.checked, visit)}
                     />
                 ))}
@@ -387,10 +435,11 @@ export default function Lists() {
                 onClickYes={() => handleCancelAppointment()}
             />
 
+            {/* -----------------------  History Modal  -------------------------------------- */}
             <ModalCustom open={historyModal?.open} title={'Add History'}>
-                <Box sx={{ width: 900 }}>
+                <Box sx={{ maxWidth: 900 }}>
                     {historyModal?.loading ? (
-                        <Box sx={styles.loadingContainer}>
+                        <Box sx={{ ...styles.loadingContainer, height: 'auto' }}>
                             <CircularProgress size={35} color="inherit" />
                         </Box>
                     ) : (
@@ -416,7 +465,7 @@ export default function Lists() {
                                         </Button>
 
                                         {!!historyModal?.error == false && (
-                                            <Button onClick={handlePosttHistory} variant="text" sx={{ color: COLORS.secondory }}>
+                                            <Button onClick={handlePostHistory} variant="text" sx={{ color: COLORS.secondory }}>
                                                 Save
                                             </Button>
                                         )}
@@ -425,7 +474,142 @@ export default function Lists() {
                             </Box>
                         </>
                     )}
-                    {!!error && <Typography>{error?.response?.data?.message || error?.response?.data || error?.message}</Typography>}
+                    {!!historyModal?.error && (
+                        <Typography>
+                            {historyModal?.error?.response?.data?.message ||
+                                historyModal?.error?.response?.data ||
+                                historyModal?.error?.message}
+                        </Typography>
+                    )}
+                </Box>
+            </ModalCustom>
+
+            {/* -----------------------  View Reports Modal  -------------------------------------- */}
+            <ModalCustom open={viewReportsModal?.open} title={'Lab Reports'}>
+                <Box>
+                    {viewReportsModal?.loading ? (
+                        <Box sx={{ ...styles.loadingContainer, height: 'auto' }}>
+                            <CircularProgress size={35} color="inherit" />
+                        </Box>
+                    ) : (
+                        <>
+                            <IconButton
+                                color="inherit"
+                                onClick={() => setViewReportsModal({ ...viewReportsModal, error: null, open: false, data: null })}
+                                sx={{ position: 'absolute', top: 10, right: 10 }}
+                            >
+                                <CloseIcon />
+                            </IconButton>
+
+                            {viewReportsModal?.data?.map((item) => (
+                                <Accordion>
+                                    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
+                                        <Typography sx={styles.accordianTitle}>{item?.type}</Typography>
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                            {item?.list.map((report) => (
+                                                <Box onClick={() => setSelectedImage({ open: true, image: report?.imagePath })}>
+                                                    <img
+                                                        src={`https://cloudclinicdevapi.azurewebsites.net/media/clinic/Documents/${report?.imagePath}`}
+                                                        alt={'lab report'}
+                                                        width={50}
+                                                        height={50}
+                                                    />
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    </AccordionDetails>
+                                </Accordion>
+                            ))}
+                        </>
+                    )}
+                    {!!viewReportsModal?.error && (
+                        <Typography>
+                            {viewReportsModal?.error?.response?.data?.message ||
+                                viewReportsModal?.error?.response?.data ||
+                                viewReportsModal?.error?.message}
+                        </Typography>
+                    )}
+                </Box>
+            </ModalCustom>
+
+            {/* -----------------------  Upload Reports Modal  -------------------------------------- */}
+            <ModalCustom open={uploadReportsModal?.open} title={'Upload Reports'}>
+                <Grid container sx={{ maxWidth: 500 }}>
+                    <Grid item lg={6} md={6} sm={6} xs={12}>
+                        <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                            <Box sx={styles.imageContainer}>
+                                {uploadedFile?.url && (
+                                    <img src={uploadedFile?.url} alt={'uploaded report'} width={'100%'} height={'100%'} />
+                                )}
+                            </Box>
+                        </Box>
+                    </Grid>
+
+                    <Grid item lg={6} md={6} sm={6} xs={12}>
+                        <Box sx={{ display: 'flex', flex: 1 }}>
+                            <FormControl>
+                                <RadioGroup
+                                    aria-labelledby="demo-controlled-radio-buttons-group"
+                                    name="controlled-radio-buttons-group"
+                                    value={labReportType}
+                                    onChange={(e) => setLabReportType(e.target.value)}
+                                >
+                                    <FormControlLabel value="X-Ray" control={<Radio />} label="X-Ray" />
+                                    <FormControlLabel value="CT Scan" control={<Radio />} label="CT Scan" />
+                                    <FormControlLabel value="MRI" control={<Radio />} label="MRI" />
+                                    <FormControlLabel value="Lab Test" control={<Radio />} label="Lab Test" />
+                                    <FormControlLabel value="Ultrasound" control={<Radio />} label="Ultrasound" />
+                                    <FormControlLabel value="Other" control={<Radio />} label="Other" />
+                                </RadioGroup>
+                            </FormControl>
+                        </Box>
+                    </Grid>
+
+                    <Grid item lg={12} md={12} sm={12} xs={12}>
+                        {labReportType == 'Other' && <TextField type="input" fullWidth placeholder="Description" sx={{ mb: 2 }} />}
+                        <TextField type="file" fullWidth accept="image/*" onChange={(e) => handleOnChangeUploadReport(e.target.files)} />
+                    </Grid>
+
+                    <Grid item lg={12} md={12} sm={12} xs={12} mt={2}>
+                        <Box sx={styles.btnContainer}>
+                            {uploadReportsModal?.loading ? (
+                                <CircularProgress size={25} color="inherit" />
+                            ) : (
+                                <>
+                                    <Button
+                                        onClick={() => setUploadReportsModal({ open: false, loading: false, error: null })}
+                                        variant="text"
+                                        sx={{ color: 'red' }}
+                                    >
+                                        Cancel
+                                    </Button>
+
+                                    <Button onClick={handleUploadReport} variant="text" sx={{ color: COLORS.secondory }}>
+                                        Upload
+                                    </Button>
+                                </>
+                            )}
+                        </Box>
+                    </Grid>
+                </Grid>
+            </ModalCustom>
+
+            <ModalCustom open={selectedImage?.open}>
+                <IconButton
+                    color="inherit"
+                    onClick={() => setSelectedImage({ open: false, image: null })}
+                    sx={{ position: 'absolute', top: 5, right: 5, backgroundColor: '#fff' }}
+                >
+                    <CloseIcon />
+                </IconButton>
+                <Box sx={{ m: -3 }}>
+                    <img
+                        src={`https://cloudclinicdevapi.azurewebsites.net/media/clinic/Documents/${selectedImage?.image}`}
+                        alt={'select report'}
+                        width={'100%'}
+                    />
                 </Box>
             </ModalCustom>
         </div>
@@ -434,7 +618,7 @@ export default function Lists() {
 
 const styles = {
     loadingContainer: {
-        height: 373,
+        height: 400,
         width: '100%',
         display: 'flex',
         justifyContent: 'center',
@@ -452,6 +636,15 @@ const styles = {
         direction: 'row',
         gap: 1,
         justifyContent: 'flex-end'
+    },
+    accordianTitle: { fontSize: 16, fontWeight: 600 },
+    imageContainer: {
+        backgroundColor: '#D3D3D3',
+        width: 150,
+        height: 220,
+        borderRadius: 2,
+        overflow: 'hidden',
+        border: '1px solid #d5d5d5'
     }
 };
 

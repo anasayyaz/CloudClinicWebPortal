@@ -245,7 +245,7 @@ export default function Patients() {
                                             </TableCell>
 
                                             <TableCell align={'left'} sx={{ textTransform: 'capitalize' }}>
-                                                {row?.name?.toLowerCase()}
+                                                {row?.name?.toLowerCase()} {row?.lastName?.toLowerCase()}
                                             </TableCell>
 
                                             <TableCell align={'left'}>{row?.identificationNo}</TableCell>

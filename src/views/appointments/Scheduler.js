@@ -137,8 +137,20 @@ export default function Scheduler() {
         }
     };
 
-    console.log('modal ', modal);
-    console.log(new Date('Fri Jun 16 2023 02:30:00 GMT+0500 (Pakistan Standard Time)').toISOString().slice(0, 16));
+    const eventStyleGetter = (event, start, end, isSelected) => {
+        var backgroundColor = event.hexColor;
+        var style = {
+            backgroundColor: backgroundColor,
+            borderRadius: '0px',
+            opacity: 0.8,
+            color: 'white',
+            border: '0px',
+            display: 'block'
+        };
+        return {
+            style: style
+        };
+    };
 
     return (
         <div style={{ margin: '5px' }}>
@@ -162,7 +174,8 @@ export default function Scheduler() {
                         setSelectedPatient(e?.patient_NationalID);
                         setSelectedPhysician(e?.consultant_NationalID);
                     }}
-                    style={{ backgroundColor: '#ffffff' }}
+                    style={{ backgroundColor: '#ffffff', height: '100vh' }}
+                    eventPropGetter={eventStyleGetter}
                 />
             )}
 

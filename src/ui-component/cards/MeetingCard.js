@@ -26,8 +26,8 @@ export default function MeetingCard({
     onClickCancel,
     onClickVitalSign,
     onClickHistory,
-    onClickLabReports,
-    onClickUploadDoc,
+    onClickViewReports,
+    onClickUploadReports,
     onChangeConfirm
 }) {
     const [openQR, setOpenQR] = useState(false);
@@ -157,12 +157,12 @@ export default function MeetingCard({
                             </Button>
                         </Grid>
                         <Grid item lg={6} md={6} sm={6} xs={6}>
-                            <Button fullWidth variant="contained">
+                            <Button fullWidth variant="contained" onClick={onClickViewReports}>
                                 View Reports
                             </Button>
                         </Grid>
                         <Grid item lg={6} md={6} sm={6} xs={6}>
-                            <Button fullWidth variant="contained">
+                            <Button fullWidth variant="contained" onClick={onClickUploadReports}>
                                 Upload Reports
                             </Button>
                         </Grid>
