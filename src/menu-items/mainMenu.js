@@ -14,7 +14,8 @@ import {
     IconBriefcase,
     IconUsers,
     IconStethoscope,
-    IconWheelchair
+    IconWheelchair,
+    IconDeviceCameraPhone
 } from '@tabler/icons';
 
 // constant
@@ -33,7 +34,8 @@ const icons = {
     IconBriefcase,
     IconUsers,
     IconStethoscope,
-    IconWheelchair
+    IconWheelchair,
+    IconDeviceCameraPhone
 };
 
 // ==============================|| MAIN MENU ITEMS ||============================== //
@@ -216,20 +218,28 @@ const mainMenu = [
                 icon: icons.IconMapPin,
                 breadcrumbs: false
             },
-            {
-                id: 'payment',
-                title: 'Payment',
-                type: 'item',
-                url: '/payment',
-                icon: icons.IconCash,
-                breadcrumbs: false
-            },
+            // {
+            //     id: 'payment',
+            //     title: 'Payment',
+            //     type: 'item',
+            //     url: '/payment',
+            //     icon: icons.IconCash,
+            //     breadcrumbs: false
+            // },
             {
                 id: 'configuration',
                 title: 'Configuration',
                 type: 'item',
                 url: '/configuration',
                 icon: icons.IconSettings,
+                breadcrumbs: false
+            },
+            {
+                id: 'device',
+                title: 'Device',
+                type: 'item',
+                url: '/device',
+                icon: icons.IconDeviceCameraPhone,
                 breadcrumbs: false
             }
         ]

@@ -12,10 +12,12 @@ import Configuration from 'views/settings/configuration';
 import Payment from 'views/settings/payment';
 import Location from 'views/settings/location';
 import Wards from 'views/healthCare/wards';
+import Device from 'views/settings/device';
 import Speciality from 'views/healthCare/speciality';
 import LabTest from 'views/healthCare/labTest';
 import Users from 'views/staff/users';
 import UpcomingVisits from 'views/upcomingVisits';
+import Meeting from 'views/meeting';
 import AddEdit from 'views/appointments/addEdit';
 import ToBeAdded from 'views/appointments/tobeAdded';
 import ToBeCancelled from 'views/appointments/tobeCancelled';
@@ -161,10 +163,13 @@ const MainRoutes = {
             element: <Wards />
         },
         {
+            path: 'device',
+            element: <Device />
+        },
+        {
             path: 'location',
             element: <Location />
         },
-        ,
         {
             path: 'payment',
             element: <Payment />
@@ -172,6 +177,10 @@ const MainRoutes = {
         {
             path: 'configuration',
             element: <Configuration />
+        },
+        {
+            path: 'meeting',
+            element: <Meeting />
         },
         {
             path: '*',

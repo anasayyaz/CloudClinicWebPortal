@@ -7,6 +7,8 @@ import Physicians from 'views/staff/physicians';
 import Patients from 'views/staff/patients';
 import Nurse from 'views/staff/nurse';
 import Wards from 'views/healthCare/wards';
+import Device from 'views/settings/device';
+import Meeting from 'views/meeting';
 import UpcomingVisits from 'views/upcomingVisits';
 import AddEdit from 'views/appointments/addEdit';
 import ToBeAdded from 'views/appointments/tobeAdded';
@@ -91,6 +93,11 @@ const ReceptionistRoutes = {
         {
             path: 'wards',
             element: <Wards />
+        },
+        { path: 'meeting', element: Meeting },
+        {
+            path: 'device',
+            element: <Device />
         },
         {
             path: '*',

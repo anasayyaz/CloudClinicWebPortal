@@ -15,7 +15,8 @@ import QRCode from 'react-qr-code';
 import ModalCustom from 'ui-component/modals/ModalCustom';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState } from 'react';
-
+import { useLocation, useNavigate } from 'react-router';
+import { useSelector } from 'react-redux';
 export default function MeetingCard({
     visit,
     onClickStart,
@@ -30,7 +31,9 @@ export default function MeetingCard({
     onChangeConfirm
 }) {
     const [openQR, setOpenQR] = useState(false);
-
+    const navigate = useNavigate();
+    const { user } = useSelector((state) => state?.user);
+    const { state } = useLocation();
     let physicianName = `${visit?.consultantTitle} ${visit?.consultantFirstName} ${visit?.consultantLastName}`;
     let patientName = `${visit?.patientTitle} ${visit?.patientFirstName} ${visit?.patientLastName}`;
 
@@ -120,6 +123,7 @@ export default function MeetingCard({
                                 fullWidth
                                 variant="contained"
                                 sx={{ backgroundColor: '#7ac74f', '&: hover': { backgroundColor: '#265427' } }}
+                                onClick={() => navigate('/meeting')}
                             >
                                 <VideoCameraFrontIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} /> Start
                             </Button>

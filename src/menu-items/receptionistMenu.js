@@ -137,6 +137,14 @@ const receptionistMenu = [
                 url: '/wards',
                 icon: icons.IconBuildingHospital,
                 breadcrumbs: false
+            },
+            {
+                id: 'device',
+                title: 'Device',
+                type: 'item',
+                url: '/device',
+                icon: icons.IconDeviceCameraPhone,
+                breadcrumbs: false
             }
         ]
     }
