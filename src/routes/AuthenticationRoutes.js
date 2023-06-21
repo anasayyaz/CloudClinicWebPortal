@@ -6,6 +6,7 @@ import Loadable from 'ui-component/Loadable';
 import MinimalLayout from 'layout/MinimalLayout';
 import Login from 'views/authentication/login';
 import Register from 'views/authentication/register';
+import Meeting from 'views/meeting';
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
@@ -20,7 +21,12 @@ const AuthenticationRoutes = {
         {
             path: '/',
             element: <Navigate to="/login" replace={true} />
+        },
+        {
+            path: '/meeting',
+            element: <Navigate to="/meeting" replace={true} />
         }
+
         // {
         //     path: '/register',
         //     element: <Register />
