@@ -215,7 +215,7 @@ export default function LabTest() {
                                 setSearchQuery('');
                                 getLabTestTypeList(0, rowsPerPage, '');
                             }}
-                            titleSearchBtn={'Search Patient'}
+                            titleSearchBtn={'Search Lab Test'}
                             titleClearBtn={'Clear search list'}
                         />
                     </Grid>
