@@ -21,6 +21,7 @@
         "@tabler/icons": "^1.72.0",
         "apexcharts": "^3.35.3",
         "axios": "^1.4.0",
+        "canvasjs-react-charts": "^1.0.5",
         "formik": "^2.2.9",
         "framer-motion": "^6.3.16",
         "jwt-decode": "^3.1.2",

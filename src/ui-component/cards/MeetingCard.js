@@ -123,7 +123,7 @@ export default function MeetingCard({
                                 fullWidth
                                 variant="contained"
                                 sx={{ backgroundColor: '#7ac74f', '&: hover': { backgroundColor: '#265427' } }}
-                                onClick={() => navigate('/meeting')}
+                                onClick={() => navigate(`/meeting`)}
                             >
                                 <VideoCameraFrontIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} /> Start
                             </Button>
