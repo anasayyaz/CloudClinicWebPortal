@@ -1,9 +1,6 @@
 import * as React from 'react';
 import TablePagination from '@mui/material/TablePagination';
 import {
-    Accordion,
-    AccordionDetails,
-    AccordionSummary,
     Box,
     Button,
     CircularProgress,
@@ -19,10 +16,8 @@ import {
     Typography
 } from '@mui/material';
 
-import CloseIcon from '@mui/icons-material/Close';
 import { COLORS } from 'constants/colors';
 import PrintIcon from '@mui/icons-material/Print';
-import { profileImage } from 'utils/fetchImage';
 import { useState } from 'react';
 import { BASE_URL } from 'constants/baseUrl';
 import { useEffect } from 'react';
@@ -34,12 +29,13 @@ import 'react-toastify/dist/ReactToastify.css';
 import ModalConfirmation from 'ui-component/modals/ModalConfirmation';
 import MeetingCard from 'ui-component/cards/MeetingCard';
 import SearchField from 'ui-component/FormUI/SearchField.js';
-import { getDetail } from 'services/getDetail';
-import moment from 'moment/moment';
-import HistoryForm from 'ui-component/HistoryForm';
-import { useRef } from 'react';
-import { getReportByVisit } from 'services/labReports';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
+import IntakeHistoryComp from '../../../components/IntakeHistoryComp';
+import VitalSignComp from 'components/VitalSignComp';
+import UploadReportComp from 'components/UploadReportComp';
+import ViewReportsComp from 'components/ViewReportsComp';
+import PatientInfoComp from 'components/PatientInfoComp';
+import moment from 'moment';
 
 export default function Lists() {
     const { user } = useSelector((state) => state?.user);
@@ -59,8 +55,9 @@ export default function Lists() {
     };
 
     const handleIsConfirmed = (e) => {
-        getVisitList(page, rowsPerPage, e.target.value, searchQuery);
+        getVisitList(0, rowsPerPage, e.target.value, searchQuery);
         setIsConfirmed(e.target.value);
+        setPage(0);
     };
 
     const [visitList, setVisitList] = useState(null);
@@ -69,12 +66,49 @@ export default function Lists() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const [patient, setPatient] = useState({ loading: false, error: null, data: null, modalOpen: false });
     const [cancel, setCancel] = useState({ loading: false, error: null, data: null, modalOpen: false });
 
-    const [historyModal, setHistoryModal] = useState({ open: false, loading: false, error: null });
-    const [viewReportsModal, setViewReportsModal] = useState({ open: false, loading: false, error: null, data: null });
-    const [uploadReportsModal, setUploadReportsModal] = useState({ open: false, loading: false, error: null, data: null });
+    const [selectedVisit, setSelectedVisit] = useState(null);
+
+    const [openPatientInfoModal, setOpenPatientInfoModal] = useState(false);
+    const [openHistoryModal, setOpenHistoryModal] = useState(false);
+    const [openRescheduleModal, setOpenRescheduleModal] = useState(false);
+    const [openVitalSignModal, setOpenVitalSignModal] = useState(false);
+    const [openUploadReportModal, setOpenUploadReportModal] = useState(false);
+    const [openViewReportModal, setOpenViewReportModal] = useState(false);
+
+    const [rescheduleDateTime, setRescheduleDateTime] = useState(moment(new Date()).format('YYYY-MM-DDTHH:mm'));
+    const [loadingResch, setLoadingResch] = useState(false);
+
+    const handleRescheduleDateTime = async () => {
+        setLoadingResch(true);
+        try {
+            const res = await axios({
+                method: 'put',
+                url: `${BASE_URL}api/visit/sendRescheduleAppointmentEmail`,
+                data: {
+                    visitId: selectedVisit?.id,
+                    IsRescheduled: true,
+                    RescheduleDatetime: moment(rescheduleDateTime).format(),
+                    UserId: user?.userId
+                },
+                headers: {
+                    Authorization: `Bearer ${user?.token}`
+                }
+            });
+
+            if (res?.data) {
+                setRescheduleDateTime(moment(new Date()).format('YYYY-MM-DDTHH:mm'));
+                setOpenRescheduleModal(false);
+
+                return toast.success('Email send successfully to reschedule appointment');
+            }
+        } catch (error) {
+            return toast.error(error?.response?.data?.message ?? error?.response?.data ?? error?.message);
+        } finally {
+            setLoadingResch(false);
+        }
+    };
 
     const getVisitList = async (pageNumber, pageSize, isConfirm, searchValue) => {
         try {
@@ -106,18 +140,6 @@ export default function Lists() {
         getVisitList(page, rowsPerPage, isConfirmed, searchQuery);
     }, []);
 
-    //--------------------  Getting Patient Detail and handling other states using object
-    const handlePatientProfile = async (nationalId) => {
-        setPatient({ ...patient, modalOpen: true, loading: true });
-        try {
-            const patientDetail = await getDetail('patient', nationalId);
-
-            setPatient({ ...patient, loading: false, modalOpen: true, data: patientDetail?.data });
-        } catch (error) {
-            setPatient({ ...patient, loading: false, modalOpen: true, error: error });
-        }
-    };
-
     //--------------------  Confirm Visit  ------------------------------
     const handleConfirmVisit = async (visitConfirm, visit) => {
         try {
@@ -139,7 +161,7 @@ export default function Lists() {
                 }
             });
         } catch (error) {
-            return toast.error(error?.response?.data ?? error?.message);
+            return toast.error(error?.response?.data?.message ?? error?.response?.data ?? error?.message);
         }
     };
 
@@ -165,125 +187,9 @@ export default function Lists() {
                 setVisitList(newVisitList);
             }
         } catch (error) {
-            return toast.error(error?.response?.data ?? error?.message);
+            return toast.error(error?.response?.data?.message ?? error?.response?.data ?? error?.message);
         } finally {
             setCancel({ ...cancel, loading: false, modalOpen: false });
-        }
-    };
-
-    // -----------------------  Set Updated Histoy to History State
-
-    const [historyLoading, setHistoryLoading] = useState(false);
-    const historyRef = useRef({});
-
-    const handleHistory = async (visit) => {
-        setHistoryModal({ open: true, loading: true, error: null });
-        try {
-            const res = await axios({
-                method: 'get',
-                url: `${BASE_URL}api/History/patientLastHistory/${visit?.patient_NationalID}`,
-                headers: {
-                    Authorization: `Bearer ${user?.token}`
-                }
-            });
-
-            historyRef.current = res?.data;
-            setHistoryModal({ open: true, loading: false, error: null });
-        } catch (error) {
-            setHistoryModal({ open: true, loading: false, error: error });
-        }
-    };
-
-    const handlePostHistory = async () => {
-        setHistoryLoading(true);
-        try {
-            const res = await axios({
-                method: 'post',
-                url: `${BASE_URL}api/History`,
-                data: historyRef?.current,
-                headers: {
-                    Authorization: `Bearer ${user?.token}`
-                }
-            });
-
-            if (res?.data) {
-                return toast.error('History added successfully');
-            }
-        } catch (error) {
-            return toast.error(error?.response?.data ?? error?.message);
-        } finally {
-            setHistoryLoading(false);
-            setHistoryModal({ open: false, loading: false, error: null });
-        }
-    };
-
-    // --------------------------  View Reports
-    const [selectedImage, setSelectedImage] = useState({ open: false, image: null });
-
-    const handleViewReports = async (visit) => {
-        setViewReportsModal({ ...viewReportsModal, open: true, loading: true });
-        try {
-            const res = await getReportByVisit(visit?.id);
-            setViewReportsModal({ ...viewReportsModal, open: true, loading: false, data: res });
-        } catch (error) {
-            setViewReportsModal({ ...viewReportsModal, open: true, loading: false, error: error });
-        }
-    };
-
-    // --------------------------  Upload Reports
-
-    const [uploadedFile, setUploadedFile] = useState(null);
-    const [labReportType, setLabReportType] = useState('X-Ray');
-
-    const handleOnChangeUploadReport = async (file) => {
-        let imageName = `${user?.userId}_` + Date.now() + `_${user?.domain}.` + file?.[0]?.name?.split('.').pop();
-
-        let image = {
-            name: imageName,
-            image: file?.[0],
-            url: URL.createObjectURL(file?.[0])
-        };
-
-        setUploadedFile(image);
-    };
-
-    const handleUploadReport = async () => {
-        setUploadReportsModal({ ...uploadReportsModal, open: true, loading: true });
-        try {
-            let formdata = new FormData();
-            console.log('uploadedFile ', uploadedFile?.image, uploadedFile?.name);
-            formdata.append('body', uploadedFile?.image, uploadedFile?.name);
-
-            const resUploadFile = await axios.post(`${BASE_URL}api/uploadFile`, formdata, {
-                headers: { Authorization: `Bearer ${user?.token}`, 'Content-Type': 'multipart/form-data;', Accept: 'application/json' }
-            });
-
-            if (resUploadFile?.data) {
-                const uploadTestRes = await axios.post(
-                    `${BASE_URL}api/labtest`,
-                    {
-                        VisitID: uploadReportsModal?.data?.id,
-                        ImagePath: uploadedFile?.name,
-                        ImageName: uploadedFile?.name,
-                        Patient_NationalID: uploadReportsModal?.data?.patient_NationalID,
-                        Description: labReportType == 'Other' ? description : labReportType,
-                        Type: labReportType,
-                        IsLatest: true
-                    },
-                    {
-                        headers: { Authorization: `Bearer ${user?.token}`, Accept: 'application/json' }
-                    }
-                );
-
-                if (uploadTestRes?.data) {
-                    setUploadedFile(null);
-                    return toast.success('Report Uploaded Successfully');
-                }
-            }
-        } catch (error) {
-            return toast.error(error?.response?.data ?? error?.message);
-        } finally {
-            setUploadReportsModal({ data: null, open: false, loading: false });
         }
     };
 
@@ -340,16 +246,33 @@ export default function Lists() {
                     <MeetingCard
                         key={visit?.meetinglink}
                         visit={visit}
-                        onClickPatientProfile={() => handlePatientProfile(visit?.patient_NationalID)}
-                        onClickStart={() => {}}
-                        onClickReschedule={() => {}}
+                        onClickPatientProfile={() => {
+                            setOpenPatientInfoModal(true);
+                            setSelectedVisit(visit);
+                        }}
+                        onClickReschedule={() => {
+                            setOpenRescheduleModal(true);
+                            setSelectedVisit(visit);
+                        }}
                         onClickCancel={() => {
                             setCancel({ ...cancel, modalOpen: true, data: visit });
                         }}
-                        onClickVitalSign={() => {}}
-                        onClickHistory={() => handleHistory(visit)}
-                        onClickViewReports={() => handleViewReports(visit)}
-                        onClickUploadReports={() => setUploadReportsModal({ ...uploadReportsModal, open: true, data: visit })}
+                        onClickVitalSign={() => {
+                            setOpenVitalSignModal(true);
+                            setSelectedVisit(visit);
+                        }}
+                        onClickHistory={() => {
+                            setOpenHistoryModal(true);
+                            setSelectedVisit(visit);
+                        }}
+                        onClickViewReports={() => {
+                            setOpenViewReportModal(true);
+                            setSelectedVisit(visit);
+                        }}
+                        onClickUploadReports={() => {
+                            setOpenUploadReportModal(true);
+                            setSelectedVisit(visit);
+                        }}
                         onChangeConfirm={(e) => handleConfirmVisit(e.target.checked, visit)}
                     />
                 ))}
@@ -361,7 +284,7 @@ export default function Lists() {
             )}
             {!!error && (
                 <Grid sx={styles.loadingContainer}>
-                    <Typography>{error?.response?.data?.message ?? error?.message}</Typography>
+                    <Typography>{error?.response?.data?.message ?? error?.response?.data ?? error?.message}</Typography>
                 </Grid>
             )}
             {searchQuery?.length > 0 && visitList?.length == 0 && (
@@ -384,44 +307,52 @@ export default function Lists() {
             )}
 
             {/* --------------------------  Modal for Showing Patient Info  ------------------------- */}
-            <ModalCustom open={patient.modalOpen} title={'Patient Info'}>
-                <Box sx={{ width: 330 }}>
-                    {patient?.loading && (
-                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress size={30} color="inherit" />
-                        </Box>
-                    )}
+            {openPatientInfoModal && (
+                <PatientInfoComp
+                    open={openPatientInfoModal}
+                    onClose={() => {
+                        setOpenPatientInfoModal(false);
+                    }}
+                    visit={selectedVisit}
+                />
+            )}
 
-                    <IconButton
-                        color="inherit"
-                        onClick={() => setPatient({ ...patient, modalOpen: false, data: null, error: null })}
-                        sx={{ position: 'absolute', top: 10, right: 10 }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
+            {/* ------------------------  Modal Reschedule Visit  -------------------------- */}
+            <ModalCustom open={openRescheduleModal} title={'Reschedule Appointment'}>
+                <Box sx={{ width: '20vw' }}>
+                    <TextField
+                        fullWidth
+                        type="datetime-local"
+                        variant="outlined"
+                        label="Appointment Reschedule Date Time"
+                        InputLabelProps={{ shrink: true }}
+                        sx={{ my: 2 }}
+                        InputProps={{
+                            inputProps: {
+                                min: moment(new Date()).format('YYYY-MM-DDTHH:mm')
+                            }
+                        }}
+                        value={rescheduleDateTime}
+                        onChange={(e) => setRescheduleDateTime(e?.target?.value)}
+                    />
 
-                    {!!patient?.data && (
-                        <>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-                                <img alt={'Profile'} src={profileImage(patient?.data?.profileImage)} style={styles.profilePicture} />
-                            </Box>
+                    <Box sx={styles.btnContainer}>
+                        {loadingResch ? (
+                            <CircularProgress size={25} color="inherit" />
+                        ) : (
+                            <>
+                                {/* -------------- onClick will call the onClose function that closes the History Modal */}
+                                <Button onClick={() => setOpenRescheduleModal(false)} variant="text" sx={{ color: 'red' }}>
+                                    Cancel
+                                </Button>
 
-                            <TextBox
-                                title={'Name'}
-                                subTitle={`${patient?.data?.titles} ${patient?.data?.name} ${patient?.data?.lastName}`}
-                            />
-                            <TextBox title={'Gender'} subTitle={`${patient?.data?.gender}`} />
-                            <TextBox title={'Phone No.'} subTitle={`${patient?.data?.phone}`} />
-                            <TextBox title={'NIC'} subTitle={`${patient?.data?.identificationNo}`} />
-                            <TextBox title={'Date of Birth'} subTitle={moment(patient?.data?.dob).format('MMM DD, YYYY')} />
-                            <TextBox title={'Email'} subTitle={`${patient?.data?.email}`} />
-                            <TextBox title={'Address'} subTitle={`${patient?.data?.address}`} />
-                            <TextBox title={'Guardian Name'} subTitle={`${patient?.data?.guardianName}`} />
-                            <TextBox title={'Guardian Phone'} subTitle={`${patient?.data?.guardianPhone}`} />
-                            <TextBox title={'Active'} subTitle={`${patient?.data?.isActive == true ? 'Yes' : 'No'}`} />
-                            <TextBox title={'In-Hospital'} subTitle={`${patient?.data?.inHospital == true ? 'Yes' : 'No'}`} />
-                        </>
-                    )}
+                                {/* -----------  change button title on the basis of history status */}
+                                <Button onClick={handleRescheduleDateTime} variant="text" sx={{ color: COLORS.secondory }}>
+                                    Update
+                                </Button>
+                            </>
+                        )}
+                    </Box>
                 </Box>
             </ModalCustom>
 
@@ -436,182 +367,74 @@ export default function Lists() {
             />
 
             {/* -----------------------  History Modal  -------------------------------------- */}
-            <ModalCustom open={historyModal?.open} title={'Add History'}>
-                <Box sx={{ maxWidth: 900 }}>
-                    {historyModal?.loading ? (
-                        <Box sx={{ ...styles.loadingContainer, height: 'auto' }}>
-                            <CircularProgress size={35} color="inherit" />
-                        </Box>
-                    ) : (
-                        <>
-                            <HistoryForm
-                                data={historyRef.current}
-                                onUpdate={(val) => {
-                                    historyRef.current = val;
-                                }}
-                            />
+            {openHistoryModal && (
+                <IntakeHistoryComp
+                    open={openHistoryModal}
+                    onClose={() => {
+                        setOpenHistoryModal(false);
+                    }}
+                    isHistoryUpdated={(val) => {
+                        // isHistoryUpdated will return us true from IntakeHistoryComp.js and if it is true we will change the historyStatus of selected visit to filled
+                        if (val == true) {
+                            const updatedVisitList = visitList.items.map((obj) => {
+                                if (obj.id === selectedVisit?.id) {
+                                    obj.historystatus = 'Intake History filled'; // change historyStatus to filled
+                                }
+                                return obj;
+                            });
+                            let newVisitList = { items: updatedVisitList };
+                            setVisitList(newVisitList);
+                        }
+                    }}
+                    visit={selectedVisit}
+                />
+            )}
 
-                            <Box sx={styles.btnContainer}>
-                                {historyLoading ? (
-                                    <CircularProgress size={25} color="inherit" />
-                                ) : (
-                                    <>
-                                        <Button
-                                            onClick={() => setHistoryModal({ open: false, loading: false, error: null })}
-                                            variant="text"
-                                            sx={{ color: 'red' }}
-                                        >
-                                            Cancel
-                                        </Button>
-
-                                        {!!historyModal?.error == false && (
-                                            <Button onClick={handlePostHistory} variant="text" sx={{ color: COLORS.secondory }}>
-                                                Save
-                                            </Button>
-                                        )}
-                                    </>
-                                )}
-                            </Box>
-                        </>
-                    )}
-                    {!!historyModal?.error && (
-                        <Typography>
-                            {historyModal?.error?.response?.data?.message ||
-                                historyModal?.error?.response?.data ||
-                                historyModal?.error?.message}
-                        </Typography>
-                    )}
-                </Box>
-            </ModalCustom>
-
-            {/* -----------------------  View Reports Modal  -------------------------------------- */}
-            <ModalCustom open={viewReportsModal?.open} title={'Lab Reports'}>
-                <Box>
-                    {viewReportsModal?.loading ? (
-                        <Box sx={{ ...styles.loadingContainer, height: 'auto' }}>
-                            <CircularProgress size={35} color="inherit" />
-                        </Box>
-                    ) : (
-                        <>
-                            <IconButton
-                                color="inherit"
-                                onClick={() => setViewReportsModal({ ...viewReportsModal, error: null, open: false, data: null })}
-                                sx={{ position: 'absolute', top: 10, right: 10 }}
-                            >
-                                <CloseIcon />
-                            </IconButton>
-
-                            {viewReportsModal?.data?.map((item) => (
-                                <Accordion>
-                                    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
-                                        <Typography sx={styles.accordianTitle}>{item?.type}</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                            {item?.list.map((report) => (
-                                                <Box onClick={() => setSelectedImage({ open: true, image: report?.imagePath })}>
-                                                    <img
-                                                        src={`https://cloudclinicdevapi.azurewebsites.net/media/clinic/Documents/${report?.imagePath}`}
-                                                        alt={'lab report'}
-                                                        width={50}
-                                                        height={50}
-                                                    />
-                                                </Box>
-                                            ))}
-                                        </Box>
-                                    </AccordionDetails>
-                                </Accordion>
-                            ))}
-                        </>
-                    )}
-                    {!!viewReportsModal?.error && (
-                        <Typography>
-                            {viewReportsModal?.error?.response?.data?.message ||
-                                viewReportsModal?.error?.response?.data ||
-                                viewReportsModal?.error?.message}
-                        </Typography>
-                    )}
-                </Box>
-            </ModalCustom>
+            {/* -----------------------  Vital Sign Modal  -------------------------------------- */}
+            {openVitalSignModal && (
+                <VitalSignComp
+                    open={openVitalSignModal}
+                    onClose={() => {
+                        setOpenVitalSignModal(false);
+                    }}
+                    isVitalSignUpdated={(val) => {
+                        // Same Working Done on Intake History
+                        if (val == true) {
+                            const updatedVisitList = visitList.items.map((obj) => {
+                                if (obj.id === selectedVisit?.id) {
+                                    obj.vitalsignStatus = 'VitalSigns filled'; // change vitalSignStatus to filled
+                                }
+                                return obj;
+                            });
+                            let newVisitList = { items: updatedVisitList };
+                            setVisitList(newVisitList);
+                        }
+                    }}
+                    visit={selectedVisit}
+                />
+            )}
 
             {/* -----------------------  Upload Reports Modal  -------------------------------------- */}
-            <ModalCustom open={uploadReportsModal?.open} title={'Upload Reports'}>
-                <Grid container sx={{ maxWidth: 500 }}>
-                    <Grid item lg={6} md={6} sm={6} xs={12}>
-                        <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                            <Box sx={styles.imageContainer}>
-                                {uploadedFile?.url && (
-                                    <img src={uploadedFile?.url} alt={'uploaded report'} width={'100%'} height={'100%'} />
-                                )}
-                            </Box>
-                        </Box>
-                    </Grid>
+            {openUploadReportModal && (
+                <UploadReportComp
+                    open={openUploadReportModal}
+                    onClose={() => {
+                        setOpenUploadReportModal(false);
+                    }}
+                    visit={selectedVisit}
+                />
+            )}
 
-                    <Grid item lg={6} md={6} sm={6} xs={12}>
-                        <Box sx={{ display: 'flex', flex: 1 }}>
-                            <FormControl>
-                                <RadioGroup
-                                    aria-labelledby="demo-controlled-radio-buttons-group"
-                                    name="controlled-radio-buttons-group"
-                                    value={labReportType}
-                                    onChange={(e) => setLabReportType(e.target.value)}
-                                >
-                                    <FormControlLabel value="X-Ray" control={<Radio />} label="X-Ray" />
-                                    <FormControlLabel value="CT Scan" control={<Radio />} label="CT Scan" />
-                                    <FormControlLabel value="MRI" control={<Radio />} label="MRI" />
-                                    <FormControlLabel value="Lab Test" control={<Radio />} label="Lab Test" />
-                                    <FormControlLabel value="Ultrasound" control={<Radio />} label="Ultrasound" />
-                                    <FormControlLabel value="Other" control={<Radio />} label="Other" />
-                                </RadioGroup>
-                            </FormControl>
-                        </Box>
-                    </Grid>
-
-                    <Grid item lg={12} md={12} sm={12} xs={12}>
-                        {labReportType == 'Other' && <TextField type="input" fullWidth placeholder="Description" sx={{ mb: 2 }} />}
-                        <TextField type="file" fullWidth accept="image/*" onChange={(e) => handleOnChangeUploadReport(e.target.files)} />
-                    </Grid>
-
-                    <Grid item lg={12} md={12} sm={12} xs={12} mt={2}>
-                        <Box sx={styles.btnContainer}>
-                            {uploadReportsModal?.loading ? (
-                                <CircularProgress size={25} color="inherit" />
-                            ) : (
-                                <>
-                                    <Button
-                                        onClick={() => setUploadReportsModal({ open: false, loading: false, error: null })}
-                                        variant="text"
-                                        sx={{ color: 'red' }}
-                                    >
-                                        Cancel
-                                    </Button>
-
-                                    <Button onClick={handleUploadReport} variant="text" sx={{ color: COLORS.secondory }}>
-                                        Upload
-                                    </Button>
-                                </>
-                            )}
-                        </Box>
-                    </Grid>
-                </Grid>
-            </ModalCustom>
-
-            <ModalCustom open={selectedImage?.open}>
-                <IconButton
-                    color="inherit"
-                    onClick={() => setSelectedImage({ open: false, image: null })}
-                    sx={{ position: 'absolute', top: 5, right: 5, backgroundColor: '#fff' }}
-                >
-                    <CloseIcon />
-                </IconButton>
-                <Box sx={{ m: -3 }}>
-                    <img
-                        src={`https://cloudclinicdevapi.azurewebsites.net/media/clinic/Documents/${selectedImage?.image}`}
-                        alt={'select report'}
-                        width={'100%'}
-                    />
-                </Box>
-            </ModalCustom>
+            {/* -----------------------  View Reports Modal  -------------------------------------- */}
+            {openViewReportModal && (
+                <ViewReportsComp
+                    open={openViewReportModal}
+                    onClose={() => {
+                        setOpenViewReportModal(false);
+                    }}
+                    visit={selectedVisit}
+                />
+            )}
         </div>
     );
 }
@@ -624,35 +447,10 @@ const styles = {
         justifyContent: 'center',
         alignItems: 'center'
     },
-    profilePicture: {
-        width: 100,
-        height: 100,
-        borderRadius: 20,
-        backgroundColor: '#d5d5d5',
-        alignSelf: 'center'
-    },
     btnContainer: {
         display: 'flex',
         direction: 'row',
         gap: 1,
         justifyContent: 'flex-end'
-    },
-    accordianTitle: { fontSize: 16, fontWeight: 600 },
-    imageContainer: {
-        backgroundColor: '#D3D3D3',
-        width: 150,
-        height: 220,
-        borderRadius: 2,
-        overflow: 'hidden',
-        border: '1px solid #d5d5d5'
     }
-};
-
-const TextBox = ({ title, subTitle }) => {
-    return (
-        <Box sx={{ display: 'flex', my: 1 }}>
-            <Typography sx={{ width: '45%' }}>{title}</Typography>
-            <Typography>{subTitle ?? '--'}</Typography>
-        </Box>
-    );
 };

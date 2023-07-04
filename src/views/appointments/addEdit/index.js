@@ -36,7 +36,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import SearchField from 'ui-component/FormUI/SearchField.js';
 import useFetch from 'hooks/useFetch';
-import Scheduler from '../Scheduler';
+import Scheduler from './Scheduler';
 
 export default function AddEdit() {
     const { user } = useSelector((state) => state?.user);

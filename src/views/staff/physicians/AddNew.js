@@ -243,7 +243,15 @@ export default function AddNewPhysician() {
                             </Grid>
 
                             <Grid item lg={3} md={4} sm={6} xs={12}>
-                                <DateTimePicker name="dateOfBirth" label="Date of Birth" />
+                                <DateTimePicker
+                                    name="dateOfBirth"
+                                    label="Date of Birth"
+                                    InputProps={{
+                                        inputProps: {
+                                            max: new Date().toLocaleDateString('en-CA')
+                                        }
+                                    }}
+                                />
                             </Grid>
 
                             <Grid item lg={3} md={4} sm={6} xs={12}>

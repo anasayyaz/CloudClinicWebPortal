@@ -7,14 +7,150 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Button, Checkbox, FormControlLabel, Grid, TextField } from '@mui/material';
 import { useState } from 'react';
 
-export default function HistoryForm({ data, onUpdate }) {
-    const [state, setState] = useState(data);
+export default function HistoryForm({ data, onChange, visit }) {
+    //---- if history status is filled then we have to initialize old value otherwise this section will be empty and remaining section are old values
+
+    const chiefComplaint =
+        visit?.historystatus == 'Intake History filled'
+            ? {
+                  isFever: data?.isFever,
+                  isShortnessofBreath: data?.isShortnessofBreath,
+                  isHeadache: data?.isHeadache,
+                  isBackache: data?.isBackache,
+                  isChestPain: data?.isChestPain,
+                  isStomachPain: data?.isStomachPain,
+                  isWeaknessGeneralized: data?.isWeaknessGeneralized,
+                  isWeightLoss: data?.isWeightLoss,
+                  iscough: data?.iscough,
+                  isVomiting: data?.isVomiting,
+                  isDiarrhea: data?.isDiarrhea,
+                  isLossofConsciousness: data?.isLossofConsciousness,
+                  isStroke: data?.isStroke,
+                  isHBP: data?.isHBP,
+                  isAbnormalLabTest: data?.isAbnormalLabTest,
+                  isAnyOtherComplaint: data?.isAnyOtherComplaint,
+                  anyOtherComplaint: data?.anyOtherComplaint || '',
+                  forHowLong: data?.forHowLong || ''
+              }
+            : {
+                  isFever: false,
+                  isShortnessofBreath: false,
+                  isHeadache: false,
+                  isBackache: false,
+                  isChestPain: false,
+                  isStomachPain: false,
+                  isWeaknessGeneralized: false,
+                  isWeightLoss: false,
+                  iscough: false,
+                  isVomiting: false,
+                  isDiarrhea: false,
+                  isLossofConsciousness: false,
+                  isStroke: false,
+                  isHBP: false,
+                  isAbnormalLabTest: false,
+                  isAnyOtherComplaint: false,
+                  anyOtherComplaint: '',
+                  forHowLong: ''
+              };
+
+    const [state, setState] = useState({
+        //----------------- visit info
+        visitID: visit?.id,
+        patient_NationalID: visit?.patient_NationalID,
+        isDeleted: false,
+        historyID: data?.historyID || '',
+
+        //-----------------  Chief Complaint
+        ...chiefComplaint,
+
+        //-----------------  Diseases
+        isEyeProblem: data?.isEyeProblem,
+        isEarProblem: data?.isEarProblem,
+        isNoseProblem: data?.isNoseProblem,
+        isThroatProblem: data?.isThroatProblem,
+        isDentalPrblem: data?.isDentalPrblem,
+        isMouthProblem: data?.isMouthProblem,
+        isThyroidProblem: data?.isThyroidProblem,
+        isHeartDisease: data?.isHeartDisease,
+        isLungDisease: data?.isLungDisease,
+        isLeverDisease: data?.isLeverDisease,
+        isJaundice: data?.isJaundice,
+        isHepatitis: data?.isHepatitis,
+        isSwallingProblem: data?.isSwallingProblem,
+        isKidneyDisease: data?.isKidneyDisease,
+        isBoneDisease: data?.isBoneDisease,
+        isSkinDisease: data?.isSkinDisease,
+        isDiabetes: data?.isDiabetes,
+        isAnemia: data?.isAnemia,
+        isBloodDisease: data?.isBloodDisease,
+        isBleedingProblem: data?.isBleedingProblem,
+        isTumor: data?.isTumor,
+        isCancer: data?.isCancer,
+        isDementia: data?.isDementia,
+        isPsychologicalProblem: data?.isPsychologicalProblem,
+        isSeizure: data?.isSeizure,
+
+        //-----------------  Symptoms
+        isMuscleWeakDis: data?.isMuscleWeakDis,
+        isSleepDisturbance: data?.isSleepDisturbance,
+        isHeartRacing: data?.isHeartRacing,
+        isHeartBurn: data?.isHeartBurn,
+        isBloodinStool: data?.isBloodinStool,
+        isSwollenFeet: data?.isSwollenFeet,
+        isFacialPuffiness: data?.isFacialPuffiness,
+        isBurningUrine: data?.isBurningUrine,
+        isBloodinUrine: data?.isBloodinUrine,
+        isKidneyStones: data?.isKidneyStones,
+        isJointSwellingPain: data?.isJointSwellingPain,
+        isSkinRash: data?.isSkinRash,
+
+        //-----------------  Current Medication
+        currentMedications: data?.currentMedications || '',
+        medicineFrequency: data?.medicineFrequency || '',
+        medicineDosage: data?.medicineDosage || '',
+        medicineForm: data?.medicineForm || '',
+
+        //-----------------  Other Details
+        allergies: data?.allergies || '',
+        immunization: data?.immunization || '',
+        surgeriesOperations: data?.surgeriesOperations || '',
+        anymoreaccident: data?.anymoreaccident || '',
+        isBloodTransfusion: data?.isBloodTransfusion,
+
+        //-----------------  Social History
+        profession: data?.profession || '',
+        isSmooking: data?.isSmooking,
+        isDrinking: data?.isDrinking,
+        isDrugs: data?.isDrugs,
+        smoking: data?.smoking || '',
+        drinking: data?.drinking || '',
+        drugs: data?.drugs || '',
+
+        //-----------------  Family History
+        familyMemberSameMedicalProblems: data?.familyMemberSameMedicalProblems || '',
+        familyMembersHavingNotableIllness: data?.familyMembersHavingNotableIllness || '',
+        familyMembersDiedSpecificIllness: data?.familyMembersDiedSpecificIllness || '',
+
+        //-----------------  Female Section Only
+        numberofpregnancies: data?.numberofpregnancies || '',
+        ageatmenstruation: data?.ageatmenstruation || '',
+        ageofmenopaise: data?.ageofmenopaise || '',
+        lastmenstrualperiod: data?.lastmenstrualperiod || '',
+        lastpapsmear: data?.lastpapsmear || '',
+        lastmemogram: data?.lastmemogram || '',
+        isPregnant: data?.isPregnant,
+        isAbortionMiscarriage: data?.isAbortionMiscarriage,
+        isHotFlashes: data?.isHotFlashes,
+        breastlump: data?.breastlump,
+        isBreastFeeding: data?.isBreastFeeding,
+        isUterinBleeding: data?.isUterinBleeding
+    });
 
     const handleState = (key, value) => {
         setState((prevState) => ({ ...prevState, [key]: value }));
     };
 
-    onUpdate(state); // Pass the updated state to the callback function
+    onChange(state); // Pass the updated state to the callback function
 
     return (
         <div>
@@ -860,7 +996,150 @@ export default function HistoryForm({ data, onUpdate }) {
                 </AccordionDetails>
             </Accordion>
 
-            {/* <Button onClick={() => console.log('state ', state)}>Save</Button> */}
+            {/* ===================================  Female Section Only */}
+
+            {visit?.patientGender == 'Female' && (
+                <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="family-history-content" id="family-history-header">
+                        <Typography sx={styles.accordianTitle}>VIII - Female Section Only</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Grid container spacing={2}>
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <TextField
+                                    fullWidth
+                                    value={state?.numberofpregnancies}
+                                    onChange={(e) => handleState('numberofpregnancies', e.target.value)}
+                                    label="Number of Pregnancies"
+                                    variant="standard"
+                                />
+                            </Grid>
+
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <TextField
+                                    fullWidth
+                                    value={state?.ageatmenstruation}
+                                    onChange={(e) => handleState('ageatmenstruation', e.target.value)}
+                                    label="Age At Mensturation"
+                                    variant="standard"
+                                />
+                            </Grid>
+
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <TextField
+                                    fullWidth
+                                    value={state?.ageofmenopaise}
+                                    onChange={(e) => handleState('ageofmenopaise', e.target.value)}
+                                    label="Age At Menopause"
+                                    variant="standard"
+                                />
+                            </Grid>
+
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <TextField
+                                    fullWidth
+                                    value={state?.lastmenstrualperiod}
+                                    onChange={(e) => handleState('lastmenstrualperiod', e.target.value)}
+                                    label="Last Menstrual"
+                                    variant="standard"
+                                />
+                            </Grid>
+
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <TextField
+                                    fullWidth
+                                    value={state?.lastpapsmear}
+                                    onChange={(e) => handleState('lastpapsmear', e.target.value)}
+                                    label="Last Pap Smear"
+                                    variant="standard"
+                                />
+                            </Grid>
+
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <TextField
+                                    fullWidth
+                                    value={state?.lastmemogram}
+                                    onChange={(e) => handleState('lastmemogram', e.target.value)}
+                                    label="Last Memogram"
+                                    variant="standard"
+                                />
+                            </Grid>
+
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={state.isPregnant}
+                                            onChange={(e) => handleState('isPregnant', e.target.checked)}
+                                        />
+                                    }
+                                    label="Pregnant"
+                                />
+                            </Grid>
+
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={state.isAbortionMiscarriage}
+                                            onChange={(e) => handleState('isAbortionMiscarriage', e.target.checked)}
+                                        />
+                                    }
+                                    label="Abortion/Miscarriage"
+                                />
+                            </Grid>
+
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={state.isHotFlashes}
+                                            onChange={(e) => handleState('isHotFlashes', e.target.checked)}
+                                        />
+                                    }
+                                    label="Hot Flashes"
+                                />
+                            </Grid>
+
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={state.breastlump}
+                                            onChange={(e) => handleState('breastlump', e.target.checked)}
+                                        />
+                                    }
+                                    label="Breast Lump"
+                                />
+                            </Grid>
+
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={state.isBreastFeeding}
+                                            onChange={(e) => handleState('isBreastFeeding', e.target.checked)}
+                                        />
+                                    }
+                                    label="Breast Feeding"
+                                />
+                            </Grid>
+
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={state.isUterinBleeding}
+                                            onChange={(e) => handleState('isUterinBleeding', e.target.checked)}
+                                        />
+                                    }
+                                    label="Uterus Bleeding"
+                                />
+                            </Grid>
+                        </Grid>
+                    </AccordionDetails>
+                </Accordion>
+            )}
         </div>
     );
 }

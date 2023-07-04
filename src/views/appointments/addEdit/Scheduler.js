@@ -165,16 +165,18 @@ export default function Scheduler() {
                     startAccessor="start"
                     endAccessor="end"
                     onSelectSlot={(e) => {
-                        setModal({ open: true, type: 'add', data: e });
-                        setSelectedPatient(null);
-                        setSelectedPhysician(null);
+                        if (new Date(e.start) > new Date()) {
+                            setModal({ open: true, type: 'add', data: e });
+                            setSelectedPatient(null);
+                            setSelectedPhysician(null);
+                        }
                     }}
                     onSelectEvent={(e) => {
                         setModal({ open: true, type: 'update', data: e });
                         setSelectedPatient(e?.patient_NationalID);
                         setSelectedPhysician(e?.consultant_NationalID);
                     }}
-                    style={{ backgroundColor: '#ffffff', height: '100vh' }}
+                    style={{ backgroundColor: '#ffffff', height: '70vh' }}
                     eventPropGetter={eventStyleGetter}
                 />
             )}

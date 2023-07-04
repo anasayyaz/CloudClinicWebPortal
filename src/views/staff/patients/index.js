@@ -64,13 +64,15 @@ export default function Patients() {
     };
 
     const handleInHospital = (e) => {
-        getPatientList(page, rowsPerPage, e.target.value, wardId, searchQuery);
+        getPatientList(0, rowsPerPage, e.target.value, wardId, searchQuery);
         setInHospital(e.target.value);
+        setPage(0);
     };
 
     const handleWard = (e) => {
-        getPatientList(page, rowsPerPage, inHospital, e.target.value, searchQuery);
+        getPatientList(0, rowsPerPage, inHospital, e.target.value, searchQuery);
         setWardId(e.target.value);
+        setPage(0);
     };
 
     const { data: wardList, loading: loadingWardList, error: errorWardList, refetch: refetchWardList } = useFetch(`${BASE_URL}api/ward`);

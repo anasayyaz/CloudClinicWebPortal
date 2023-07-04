@@ -26,9 +26,6 @@ import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router';
 import ModalConfirmation from 'ui-component/modals/ModalConfirmation';
 
-import { IconPlus } from '@tabler/icons';
-import ModalCustom from 'ui-component/modals/ModalCustom';
-import { FamilyRestroomOutlined } from '@mui/icons-material';
 import { resetPassword } from 'services/resetPassword';
 import { deleteUser } from 'services/deleteUser';
 import { getDetail } from 'services/getDetail';
@@ -290,7 +287,15 @@ export default function EditNurse() {
                                 </Grid>
 
                                 <Grid item lg={3} md={4} sm={6} xs={12}>
-                                    <DateTimePicker name="dateOfBirth" label="Date of Birth" />
+                                    <DateTimePicker
+                                        name="dateOfBirth"
+                                        label="Date of Birth"
+                                        InputProps={{
+                                            inputProps: {
+                                                max: new Date().toLocaleDateString('en-CA')
+                                            }
+                                        }}
+                                    />
                                 </Grid>
 
                                 <Grid item lg={3} md={4} sm={6} xs={12}>
