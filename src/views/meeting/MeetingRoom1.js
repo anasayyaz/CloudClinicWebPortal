@@ -49,13 +49,6 @@ import PreviousVisits from 'views/components/previousVisits';
 import ModalCustom from 'ui-component/modals/ModalCustom';
 import Autocomplete from '@mui/material/Autocomplete';
 import { COLORS } from 'constants/colors';
-const jitsiContainerStyle = {
-    width: '100%',
-    height: '100%',
-    marginBottom: '10px',
-    marginTop: '10px',
-    marginLeft: '10px'
-};
 const MeetingRoom1 = (props) => {
     const { user } = useSelector((state) => state?.user);
     const [roomName, setroomName] = useState('');
@@ -301,7 +294,7 @@ const MeetingRoom1 = (props) => {
                     {!loading && (
                         <>
                             <Grid item lg={5} xs={12}>
-                                <VitalSign visitID={586} />
+                                <VitalSign visitID={586} show={true} />
                             </Grid>
                             <Grid item lg={7}>
                                 <Grid sx={{ height: '50vh', borderRadius: 3 }}>

@@ -28,6 +28,9 @@ import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { BASE_URL } from 'constants/baseUrl';
 import useFetch from 'hooks/useFetch';
 import { COLORS } from 'constants/colors';
+import VitalSign from 'views/components/vitalSign';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
 // ==============================|| SAMPLE PAGE ||============================== //
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -38,6 +41,11 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 const MeetingRoom2 = () => {
+    const { user } = useSelector((state) => state?.user);
+    const [roomName, setroomName] = useState('');
+    const [vr, setvr] = useState(null);
+    const [loading, setLoading] = useState();
+
     const {
         data: locationList1,
         loading: loadingLocationList1,
@@ -73,6 +81,28 @@ const MeetingRoom2 = () => {
         refetch: refetchLocationList6
     } = useFetch(`${BASE_URL}api/ward?pageNumber=1&pageSize=20&QuerySearch=`);
 
+    async function startConference() {
+        const domain = 'meet.cloudclinic.ai';
+        const visitresponse = await axios({
+            method: 'get',
+            url: `${BASE_URL}api/visit/getVisit/586`,
+            headers: {
+                Authorization: `Bearer ${user?.token}`
+            }
+        });
+        setvr(visitresponse);
+        setroomName(visitresponse.data[0].meetinglink);
+
+        setLoading(false);
+    }
+    useEffect(() => {
+        setLoading(true);
+        if (window.JitsiMeetExternalAPI) {
+            startConference();
+        } else {
+            alert('Jitsi Meet API script not loaded');
+        }
+    }, []);
     return (
         <Grid container columnSpacing={2} sx={{ width: '100%', height: '100%' }}>
             {/* -----------------------------  Button Grid */}
@@ -137,11 +167,40 @@ const MeetingRoom2 = () => {
             <Grid item lg={4}>
                 <Grid container spacing={2} sx={{ mr: -2 }}>
                     <Grid item lg={12} sx={{ height: 240 }}>
-                        <Box sx={{ backgroundColor: 'green', width: '105%', height: '100%' }} />
+                        <Box sx={{ backgroundColor: 'green', width: '105%', height: '100%' }}>
+                            {' '}
+                            {!loading && (
+                                <JitsiMeeting
+                                    domain={'meet.cloudclinic.ai'}
+                                    roomName={roomName}
+                                    configOverwrite={{
+                                        startWithAudioMuted: false,
+                                        disableModeratorIndicator: true,
+                                        enableEmailInStats: false,
+                                        disableSimulcast: false
+                                    }}
+                                    interfaceConfigOverwrite={{
+                                        DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+                                        filmStripOnly: false,
+                                        SHOW_JITSI_WATERMARK: false,
+                                        SHOW_WATERMARK_FOR_GUEST: false
+                                    }}
+                                    userInfo={{
+                                        displayName: 'Cloud Clinic'
+                                    }}
+                                    getIFrameRef={(iframeRef) => {
+                                        iframeRef.style.height = '100%';
+                                    }}
+                                />
+                            )}
+                            {loading && <CircularProgress size={35} color="inherit" />}
+                        </Box>
                     </Grid>
 
                     <Grid item lg={12} sx={{ height: 330 }}>
-                        <Box sx={{ backgroundColor: 'blue', width: '105%', height: '100%' }} />
+                        <Box sx={{ width: '105%', height: '100%' }}>
+                            <VitalSign visitID={586} show={false} />
+                        </Box>
                     </Grid>
 
                     <Grid item lg={12}>
@@ -200,7 +259,6 @@ const MedicineComp = () => {
     } = useFetch(`${BASE_URL}api/medicine`);
 
     // let medicine = [{ medicineID: 1, name: '123123', genericName: '123123' }];
-
     const {
         data: route,
         loading: loadingRoute,

@@ -2,6 +2,25 @@ import React, { useEffect, useState, useRef, useContext } from 'react';
 import { useSelector } from 'react-redux';
 import useFetch from 'hooks/useFetch';
 import { BASE_URL } from 'constants/baseUrl';
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Box,
+    Button,
+    CircularProgress,
+    FormControl,
+    FormControlLabel,
+    LinearProgress,
+    Grid,
+    IconButton,
+    MenuItem,
+    Radio,
+    RadioGroup,
+    Select,
+    TextField,
+    Typography
+} from '@mui/material';
 // import LoadingSpinner from './LoadingSpinner';
 const Prescription = (props) => {
     const { user } = useSelector((state) => state?.user);
@@ -246,16 +265,20 @@ const Prescription = (props) => {
     }, []);
 
     return (
-        <div className="col-md-12 p-0  ">
-            <div className="row py-3 mx-2 d-flex justify-content-between">
+        <Grid container xs={12} sx={{ padding: 0 }}>
+            <Box>
                 <img src="https://cloudclinicdemo.azurewebsites.net/avatars/Logo.png" alt="Cloud Clinic Logo" className="cc_logo" />
-                <div className="text-right">
-                    <div className="w-100 d-flex align-items-baseline col-md-6 mt-2 px-4">
-                        <p className="pb-2 pr-2 m-0 cc-form-label">Dr.</p>
-                        <h5 className="pt-2 cc-form-input">{props.cname}</h5>
-                    </div>
-                </div>
-            </div>
+                <Box className="text-right">
+                    <Box className="w-100 d-flex align-items-baseline col-md-6 mt-2 px-4">
+                        <Typography className="pb-2 pr-2 m-0 cc-form-label" component="p">
+                            Dr.
+                        </Typography>
+                        <Typography className="pt-2 cc-form-input" component="h5">
+                            {props.cname}
+                        </Typography>
+                    </Box>
+                </Box>
+            </Box>
             <div className="form-group">
                 {prescriptionUpdated && (
                     <div class="alert alert-success d-flex justify-content-between align-items-center" role="alert">
@@ -628,7 +651,7 @@ const Prescription = (props) => {
                     </div>
                 </div>
             </div>
-        </div>
+        </Grid>
     );
 };
 export default Prescription;

@@ -209,22 +209,37 @@ const VitalSign = (props) => {
                 <Grid
                     lg={12}
                     xs={12}
-                    sx={{ height: '50vh', backgroundColor: '#636f83', border: 5, borderColor: '#DDE6ED', borderRadius: 3, p: 1 }}
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        flex: 1,
+                        justifyContent: 'space-between',
+                        backgroundColor: '#636f83',
+                        border: 5,
+                        borderColor: '#DDE6ED',
+                        borderRadius: 3,
+                        p: 1
+                    }}
                 >
-                    <Grid container lg={12} sx={{ height: '10vh', backgroundColor: '#636f83', borderRadius: 1 }}>
-                        <Grid item lg={6} sx={{ borderBottom: 2, borderColor: '#424949' }}>
-                            {' '}
-                            <Typography variant="h6" component="h2" sx={{ color: 'white', p: 1 }}>
-                                Gender: <span style={{ color: '#E7FFC2', p: 1 }}>Male</span>
-                            </Typography>
-                        </Grid>
-                        <Grid item lg={6} sx={{ borderBottom: 2, borderColor: '#424949' }}>
-                            {' '}
-                            <Typography variant="h6" component="h2" sx={{ color: 'white', p: 1 }}>
-                                Age: <span style={{ color: '#E7FFC2', p: 1 }}>28 </span>
-                                <small>(years)</small>
-                            </Typography>
-                        </Grid>
+                    <Grid container lg={12} sx={{ backgroundColor: '#636f83', borderRadius: 1 }}>
+                        {props.show && (
+                            <>
+                                <Grid item lg={6} sx={{ borderBottom: 2, borderColor: '#424949' }}>
+                                    {' '}
+                                    <Typography variant="h6" component="h2" sx={{ color: 'white', p: 1 }}>
+                                        Gender: <span style={{ color: '#E7FFC2', p: 1 }}>Male</span>
+                                    </Typography>
+                                </Grid>
+                                <Grid item lg={6} sx={{ borderBottom: 2, borderColor: '#424949' }}>
+                                    {' '}
+                                    <Typography variant="h6" component="h2" sx={{ color: 'white', p: 1 }}>
+                                        Age: <span style={{ color: '#E7FFC2', p: 1 }}>28 </span>
+                                        <small>(years)</small>
+                                    </Typography>
+                                </Grid>
+                            </>
+                        )}
+
                         <Grid item lg={6}>
                             {' '}
                             <Typography variant="h6" component="h2" sx={{ color: 'white', p: 1 }}>
@@ -240,7 +255,7 @@ const VitalSign = (props) => {
                         </Grid>
                     </Grid>
 
-                    <Grid container lg={12} sx={{ height: '12vh', backgroundColor: '#424949', borderRadius: 1 }}>
+                    <Grid container lg={12} sx={{ backgroundColor: '#424949', borderRadius: 1 }}>
                         <Grid item lg={12} sx={{ borderBottom: 2, borderColor: '#636f83' }}>
                             {' '}
                             <Typography variant="h4" component="h2" sx={{ color: 'white', p: 1 }}>
@@ -273,7 +288,7 @@ const VitalSign = (props) => {
                             <Button
                                 variant="h6"
                                 component="h2"
-                                sx={{ color: 'white', p: 1 }}
+                                sx={{ color: 'white', p: 1, ml: -1 }}
                                 onClick={() => setIsOpenMAPModal((modalIsOpenMAPModal) => !modalIsOpenMAPModal)}
                             >
                                 MAP: &nbsp;<span style={{ color: '#AFE6FF', p: 1 }}>{vitalSignData.map} </span>
@@ -291,7 +306,7 @@ const VitalSign = (props) => {
                             </Button>
                         </Grid>
                     </Grid>
-                    <Grid container lg={12} sx={{ height: '12vh', backgroundColor: '#424949', mt: 1, borderRadius: 1 }}>
+                    <Grid container lg={12} sx={{ backgroundColor: '#424949', mt: 1, borderRadius: 1 }}>
                         <Grid item lg={12} sx={{ borderBottom: 2, borderColor: '#636f83' }}>
                             {' '}
                             <Button
@@ -338,7 +353,7 @@ const VitalSign = (props) => {
                             </Button>
                         </Grid>
                     </Grid>
-                    <Grid container lg={12} sx={{ height: '10vh', backgroundColor: '#636f83', borderRadius: 1 }}>
+                    <Grid container lg={12} sx={{ backgroundColor: '#636f83', borderRadius: 1 }}>
                         <Grid item lg={10} sx={{ borderBottom: 2, borderColor: '#424949' }}>
                             {' '}
                             <Typography variant="h4" component="h2" sx={{ color: '#E7FFC2', p: 1 }}>
