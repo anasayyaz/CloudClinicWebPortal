@@ -24,6 +24,7 @@ import { COLORS } from 'constants/colors';
 // ------- Importing Redux Store
 import { useSelector } from 'react-redux';
 import useFetch from 'hooks/useFetch';
+import moment from 'moment';
 
 export default function AddNewNurse() {
     const { user } = useSelector((state) => state.user);
@@ -211,7 +212,15 @@ export default function AddNewNurse() {
                             </Grid>
 
                             <Grid item lg={3} md={4} sm={6} xs={12}>
-                                <DateTimePicker name="dateOfBirth" label="Date of Birth" />
+                                <DateTimePicker
+                                    name="dateOfBirth"
+                                    label="Date of Birth"
+                                    InputProps={{
+                                        inputProps: {
+                                            max: new Date().toLocaleDateString('en-CA')
+                                        }
+                                    }}
+                                />
                             </Grid>
 
                             <Grid item lg={3} md={4} sm={6} xs={12}>

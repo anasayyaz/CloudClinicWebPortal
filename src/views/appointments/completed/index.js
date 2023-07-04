@@ -39,7 +39,7 @@ import SearchField from 'ui-component/FormUI/SearchField.js';
 import useFetch from 'hooks/useFetch';
 import moment from 'moment';
 
-export default function Patients() {
+export default function Completed() {
     const { user } = useSelector((state) => state?.user);
 
     const [page, setPage] = React.useState(0);
@@ -51,8 +51,13 @@ export default function Patients() {
     const [completedVisitList, setCompletedVisitList] = useState(null);
     const [searchQuery, setSearchQuery] = useState();
     const [isPaid, setIsPaid] = useState('all');
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(new Date());
+
+    const curDate = new Date();
+
+    const [startDate, setStartDate] = useState(
+        new Date(curDate.getFullYear(), curDate.getMonth(), curDate.getDate() - 14).toLocaleDateString('en-CA')
+    );
+    const [endDate, setEndDate] = useState(new Date().toLocaleDateString('en-CA'));
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -67,18 +72,21 @@ export default function Patients() {
     };
 
     const handleIsPaid = (e) => {
-        getCompletedVisitList(page, rowsPerPage, e.target.value, startDate, endDate, searchQuery);
+        getCompletedVisitList(0, rowsPerPage, e.target.value, startDate, endDate, searchQuery);
         setIsPaid(e.target.value);
+        setPage(0);
     };
 
     const handleStartDate = (e) => {
-        getCompletedVisitList(page, rowsPerPage, isPaid, e.target.value, endDate, searchQuery);
+        getCompletedVisitList(0, rowsPerPage, isPaid, e.target.value, endDate, searchQuery);
         setStartDate(e.target.value);
+        setPage(0);
     };
 
     const handleEndDate = (e) => {
-        getCompletedVisitList(page, rowsPerPage, isPaid, startDate, e.target.value, searchQuery);
+        getCompletedVisitList(0, rowsPerPage, isPaid, startDate, e.target.value, searchQuery);
         setEndDate(e.target.value);
+        setPage(0);
     };
 
     const getCompletedVisitList = async (pageNumber, pageSize, paid, start, end, searchValue) => {
@@ -91,7 +99,7 @@ export default function Patients() {
                 method: 'get',
                 url: `${BASE_URL}api/visit/CompletedVisitsList?pageNumber=${pageNumber + 1}&pageSize=${pageSize}&QuerySearch=${
                     searchValue ?? ''
-                }&StartDate=${start}&EndDate=${end}&isPaid=$${paid == 'all' ? '' : paid}`,
+                }&StartDate=${start}&EndDate=${end}&isPaid=${paid == 'all' ? '' : paid}`,
                 headers: {
                     Authorization: `Bearer ${user?.token}`
                 }
@@ -117,7 +125,7 @@ export default function Patients() {
 
             <Grid mb={2} container direction="row" justifyContent="space-between" alignItems="center">
                 <Typography variant="h3" color={COLORS.color1} sx={{ py: 1 }}>
-                    Patients
+                    Completed Appointments
                 </Typography>
             </Grid>
 
@@ -141,7 +149,7 @@ export default function Patients() {
                                         setSearchQuery('');
                                         getCompletedVisitList(0, rowsPerPage, isPaid, startDate, endDate, '');
                                     }}
-                                    titleSearchBtn={'Search Patient'}
+                                    titleSearchBtn={'Search Physician and Patient'}
                                     titleClearBtn={'Clear search list'}
                                 />
                             </Grid>
@@ -215,7 +223,7 @@ export default function Patients() {
                         </TableHead>
                         <TableBody>
                             {!!completedVisitList &&
-                                completedVisitList.items.map((row) => {
+                                completedVisitList?.items?.map((row) => {
                                     return (
                                         <TableRow
                                             hover
@@ -256,7 +264,7 @@ export default function Patients() {
                             {!!error && (
                                 <TableRow sx={{ height: 400 }}>
                                     <TableCell align="center" colSpan={6}>
-                                        <Typography>{error?.response?.data?.message ?? error?.message}</Typography>
+                                        <Typography>{error?.response?.data?.message || error?.response?.data || error?.message}</Typography>
                                     </TableCell>
                                 </TableRow>
                             )}

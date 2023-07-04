@@ -118,42 +118,57 @@ export default function MeetingCard({
 
                 <Grid item lg={4.5} sm={6} xs={12} sx={{ backgroundColor: '#fff', p: 1 }}>
                     <Grid container direction={'row'} spacing={1}>
-                        <Grid item lg={4} md={4} sm={4} xs={4}>
-                            <Button
-                                fullWidth
-                                variant="contained"
-                                sx={{ backgroundColor: '#7ac74f', '&: hover': { backgroundColor: '#265427' } }}
-                                onClick={() => navigate('/meeting')}
-                            >
-                                <VideoCameraFrontIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} /> Start
-                            </Button>
-                        </Grid>
-                        <Grid item lg={4} md={4} sm={4} xs={4}>
-                            <Button fullWidth variant="contained">
-                                <MoreTimeIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} />
-                                Reschedule
-                            </Button>
-                        </Grid>
-                        <Grid item lg={4} md={4} sm={4} xs={4}>
-                            <Button
-                                fullWidth
-                                variant="contained"
-                                sx={{ backgroundColor: '#FF2E2E', '&: hover': { background: '#c7020c' } }}
-                                onClick={onClickCancel}
-                            >
-                                <CancelIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} />
-                                Cancel
-                            </Button>
-                        </Grid>
+                        <>
+                            {visit?.status == 12 ? (
+                                <>
+                                    <Grid item lg={12} md={12} sm={12} xs={12}>
+                                        <Button disabled fullWidth variant="contained" sx={{ backgroundColor: '#FF2E2E80' }}>
+                                            <CancelIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} />
+                                            Cancel Request Sent
+                                        </Button>
+                                    </Grid>
+                                </>
+                            ) : (
+                                <>
+                                    <Grid item lg={4} md={4} sm={4} xs={4}>
+                                        <Button
+                                            fullWidth
+                                            variant="contained"
+                                            sx={{ backgroundColor: '#7ac74f', '&: hover': { backgroundColor: '#265427' } }}
+                                            onClick={() => navigate('/meeting')}
+                                        >
+                                            <VideoCameraFrontIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} /> Start
+                                        </Button>
+                                    </Grid>
+                                    <Grid item lg={4} md={4} sm={4} xs={4}>
+                                        <Button fullWidth variant="contained" onClick={onClickReschedule}>
+                                            <MoreTimeIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} />
+                                            Reschedule
+                                        </Button>
+                                    </Grid>
+                                    <Grid item lg={4} md={4} sm={4} xs={4}>
+                                        <Button
+                                            fullWidth
+                                            variant="contained"
+                                            sx={{ backgroundColor: '#FF2E2E', '&: hover': { background: '#c7020c' } }}
+                                            onClick={onClickCancel}
+                                        >
+                                            <CancelIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} />
+                                            Cancel
+                                        </Button>
+                                    </Grid>
+                                </>
+                            )}
+                        </>
 
                         <Grid item lg={6} md={6} sm={6} xs={6}>
-                            <Button fullWidth variant="contained">
-                                Vital Sign
+                            <Button fullWidth variant="contained" onClick={onClickVitalSign}>
+                                {visit?.vitalsignStatus == 'VitalSigns filled' ? 'Edit' : 'Add'} Vital Sign
                             </Button>
                         </Grid>
                         <Grid item lg={6} md={6} sm={6} xs={6}>
                             <Button fullWidth variant="contained" onClick={onClickHistory}>
-                                Intake History
+                                {visit?.historystatus == 'Intake History filled' ? 'Edit' : 'Add'} Intake History
                             </Button>
                         </Grid>
                         <Grid item lg={6} md={6} sm={6} xs={6}>

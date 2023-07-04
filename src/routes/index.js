@@ -19,7 +19,7 @@ export default function ThemeRoutes() {
     useEffect(() => {
         const userData = JSON.parse(localStorage.getItem('user'));
         !!userData && dispatch(saveUserData(userData));
-        console.log('userData ', userData);
+        // console.log('userData ', userData);
     }, []);
 
     const { user } = useSelector((state) => state.user);
@@ -35,7 +35,7 @@ export default function ThemeRoutes() {
     };
 
     let isLoggedIn = !!user;
-    console.log(isLoggedIn);
+
     let HomeRoute = showRoute[role];
     let RootRoute = isLoggedIn ? HomeRoute : AuthenticationRoutes;
 
