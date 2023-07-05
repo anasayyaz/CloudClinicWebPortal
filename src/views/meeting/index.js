@@ -4,7 +4,7 @@ import MeetingRoom1 from './MeetingRoom1';
 import MeetingRoom2 from './MeetingRoom2';
 
 const Meeting = (props) => {
-    return <div>{false ? <MeetingRoom1 /> : <MeetingRoom2 />}</div>;
+    return <div>{true ? <MeetingRoom1 /> : <MeetingRoom2 />}</div>;
 };
 
 export default Meeting;

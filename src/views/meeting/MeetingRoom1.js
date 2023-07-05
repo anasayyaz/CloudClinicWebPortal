@@ -183,8 +183,8 @@ const MeetingRoom1 = (props) => {
                     <PreviousVisits />
                 </Box>
             </ModalCustom>
-            <ModalCustom open={openPrescription} title={'Previous Visits'}>
-                <Box sx={{ width: '70vw' }}>
+            <ModalCustom open={openPrescription} title={'Prescription'}>
+                <Box sx={{ width: '50vw' }}>
                     <IconButton
                         color="inherit"
                         onClick={() => setOpenPrescription(false)}
@@ -193,6 +193,14 @@ const MeetingRoom1 = (props) => {
                         <CloseIcon />
                     </IconButton>
                     <Prescription cname={'Usman'} visitID={586} />
+                </Box>
+            </ModalCustom>
+            <ModalCustom open={openDiagnosis} title={'Diagnosis'}>
+                <Box sx={{ width: '50vw' }}>
+                    <IconButton color="inherit" onClick={() => setOpenDiagnosis(false)} sx={{ position: 'absolute', top: 10, right: 10 }}>
+                        <CloseIcon />
+                    </IconButton>
+                    <Diagnosis cname={'Usman'} visitID={586} />
                 </Box>
             </ModalCustom>
             {/* <Dialog open={openPreviousVisits} onClose={() => setOpenPreviousVisits(false)}>
@@ -228,13 +236,15 @@ const MeetingRoom1 = (props) => {
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={openDiagnosis} onClose={() => setOpenDiagnosis(false)}>
-                <DialogContent style={{ width: '500px' }}>diagnosis</DialogContent>
+            {/* <Dialog open={openDiagnosis} onClose={() => setOpenDiagnosis(false)}>
+                <DialogContent style={{ width: '500px' }}>
+                    <Diagnosis cname={'Usman'} visitID={586} />
+                </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenDiagnosis(false)}>Cancel</Button>
                     <Button onClick={() => setOpenDiagnosis(true)}>Update</Button>
                 </DialogActions>
-            </Dialog>
+            </Dialog> */}
             <Dialog open={openNotes} onClose={() => setOpenNotes(false)}>
                 <DialogContent style={{ width: '500px' }}>notes</DialogContent>
                 <DialogActions>
