@@ -68,7 +68,7 @@ const VitalSign = (props) => {
         refetch: refetchvitalSignData
     } = useFetch(`${BASE_URL}api/vitalsign/getPatientVitalSignbyVisit/${props.visitID}`);
     return (
-        <div>
+        <div style={{ height: '100%' }}>
             {!!vitalSignData && (
                 <>
                     <ModalCustom open={modalIsOpenBPModal} title={'Blood Pressure Graph'}>
@@ -213,6 +213,7 @@ const VitalSign = (props) => {
                         display: 'flex',
                         flexDirection: 'column',
                         flex: 1,
+                        height: '100%',
                         justifyContent: 'space-between',
                         backgroundColor: '#636f83',
                         border: 5,
@@ -306,6 +307,7 @@ const VitalSign = (props) => {
                             </Button>
                         </Grid>
                     </Grid>
+
                     <Grid container lg={12} sx={{ backgroundColor: '#424949', mt: 1, borderRadius: 1 }}>
                         <Grid item lg={12} sx={{ borderBottom: 2, borderColor: '#636f83' }}>
                             {' '}
@@ -353,6 +355,7 @@ const VitalSign = (props) => {
                             </Button>
                         </Grid>
                     </Grid>
+
                     <Grid container lg={12} sx={{ backgroundColor: '#636f83', borderRadius: 1 }}>
                         <Grid item lg={10} sx={{ borderBottom: 2, borderColor: '#424949' }}>
                             {' '}

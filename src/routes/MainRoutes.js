@@ -179,7 +179,7 @@ const MainRoutes = {
             element: <Configuration />
         },
         {
-            path: 'meeting',
+            path: 'meeting/:visitId',
             element: <Meeting />
         },
         {

@@ -2,9 +2,9 @@ import React from 'react';
 import { Button, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
-export default function SearchField({ onClickSearch, onChange, value, onClickClear, label, titleClearBtn, titleSearchBtn }) {
+export default function SearchField({ onClickSearch, onChange, value, onClickClear, label, titleClearBtn, titleSearchBtn, size }) {
     return (
-        <FormControl onSubmit={() => {}} fullWidth variant="outlined">
+        <FormControl size={size} onSubmit={() => {}} fullWidth variant="outlined">
             <InputLabel>{label}</InputLabel>
             <OutlinedInput
                 value={value}

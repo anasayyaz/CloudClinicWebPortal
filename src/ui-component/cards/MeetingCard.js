@@ -32,8 +32,6 @@ export default function MeetingCard({
 }) {
     const [openQR, setOpenQR] = useState(false);
     const navigate = useNavigate();
-    const { user } = useSelector((state) => state?.user);
-    const { state } = useLocation();
     let physicianName = `${visit?.consultantTitle} ${visit?.consultantFirstName} ${visit?.consultantLastName}`;
     let patientName = `${visit?.patientTitle} ${visit?.patientFirstName} ${visit?.patientLastName}`;
 
@@ -135,7 +133,7 @@ export default function MeetingCard({
                                             fullWidth
                                             variant="contained"
                                             sx={{ backgroundColor: '#7ac74f', '&: hover': { backgroundColor: '#265427' } }}
-                                            onClick={() => navigate('/meeting')}
+                                            onClick={() => navigate(`/meeting/${visit?.id}`, { state: visit })}
                                         >
                                             <VideoCameraFrontIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} /> Start
                                         </Button>
