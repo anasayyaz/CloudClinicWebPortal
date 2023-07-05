@@ -39,6 +39,7 @@ const Canvas = (props) => {
     useEffect(() => {
         setLoading(true);
         hCanvas = 300;
+        console.log(window.innerHeight + ', ' + window.innerWidth);
         if (window.innerWidth >= 2133 && window.innerHeight >= 1076) {
             wCanvas = 420;
             hCanvas = 350;
@@ -91,7 +92,7 @@ const Canvas = (props) => {
 
                 opx = px;
                 opy = py;
-                if (opx == w + 80) {
+                if (opx >= window.innerWidth) {
                     px = opx = 0;
 
                     ctx.strokeStyle = '#202020';
