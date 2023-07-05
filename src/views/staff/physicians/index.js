@@ -287,7 +287,7 @@ export default function Physicians() {
 
                         {!!error && (
                             <Grid sx={styles.loadingContainer}>
-                                <Typography>{error?.response?.data?.message ?? error?.message}</Typography>
+                                <Typography>{error?.response?.data?.message ?? error?.response?.data ?? error?.message}</Typography>
                             </Grid>
                         )}
                     </Grid>
