@@ -41,28 +41,26 @@ const MeetingRoom2 = ({ state }) => {
     const [visit, setVisit] = useState(null);
     const [loading, setLoading] = useState();
 
-    async function startConference() {
-        const visitresponse = await axios({
-            method: 'get',
-            url: `${BASE_URL}api/visit/getVisit/state?.id`,
-            headers: {
-                Authorization: `Bearer ${user?.token}`
-            }
-        });
-        setVisit(visitresponse?.data[0]);
-        setLoading(false);
-    }
+    // async function startConference() {
+    //     const visitresponse = await axios({
+    //         method: 'get',
+    //         url: `${BASE_URL}api/visit/getVisit/${state?.id}`,
+    //         headers: {
+    //             Authorization: `Bearer ${user?.token}`
+    //         }
+    //     });
+    //     setVisit(visitresponse?.data[0]);
+    //     setLoading(false);
+    // }
 
-    useEffect(() => {
-        setLoading(true);
-        if (window.JitsiMeetExternalAPI) {
-            startConference();
-        } else {
-            alert('Jitsi Meet API script not loaded');
-        }
-    }, []);
-
-    console.log(visit);
+    // useEffect(() => {
+    //     setLoading(true);
+    //     if (window.JitsiMeetExternalAPI) {
+    //         startConference();
+    //     } else {
+    //         alert('Jitsi Meet API script not loaded');
+    //     }
+    // }, []);
 
     return (
         <Grid container columnSpacing={2} sx={{ width: '100%', height: '100%' }}>
@@ -98,7 +96,7 @@ const MeetingRoom2 = ({ state }) => {
                                         {state?.patientFirstName} {state?.patientLastName}
                                     </Typography>
                                     <Typography sx={{ fontSize: 12 }}>Gender: {state?.patientGender}</Typography>
-                                    <Typography sx={{ fontSize: 12 }}>Age: {visit?.age}</Typography>
+                                    <Typography sx={{ fontSize: 12 }}>Age: {state?.patientAge}</Typography>
                                 </Box>
                             </Grid>
 

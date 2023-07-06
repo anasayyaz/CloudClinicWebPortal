@@ -134,9 +134,12 @@ export default function Scheduler() {
                 NetAmount: values.amount
             };
 
+            let method = modal.type == 'add' ? 'post' : 'put';
+            let url = modal.type == 'add' ? `${BASE_URL}api/visit` : `${BASE_URL}api/visit/updateEvent/${modal?.data?.id}`;
+
             const responseCreateAppointment = await axios({
-                method: 'post',
-                url: `${BASE_URL}api/visit`,
+                method,
+                url,
                 data,
                 headers: {
                     'Content-Type': 'application/json',
@@ -147,7 +150,32 @@ export default function Scheduler() {
             if (responseCreateAppointment.status == 200);
             {
                 setModal({ open: false, type: null, data: null });
-                toast.success('Apppointment added successfully');
+                toast.success(`Apppointment ${modal.type == 'add' ? 'added' : 'updated'} successfully`);
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoadingRequest(false);
+        }
+    };
+
+    const handleDeleteVisit = async () => {
+        setLoadingRequest(true);
+        try {
+            const resDeleteVisit = await axios({
+                method: 'delete',
+                url: `${BASE_URL}api/visit/${modal?.data?.id}`,
+                data: {},
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${user?.token}`
+                }
+            });
+            getVisitList();
+            if (resDeleteVisit.status == 200);
+            {
+                setModal({ open: false, type: null, data: null });
+                toast.success(`Apppointment deleted successfully`);
             }
         } catch (error) {
             console.log(error);
@@ -239,17 +267,24 @@ export default function Scheduler() {
                         endAccessor="end"
                         onSelectSlot={(e) => {
                             if (new Date(e.start) > new Date()) {
-                                setModal({ open: true, type: 'add', data: e });
+                                setModal({ open: true, type: 'add', data: e, show: true });
                                 setSelectedPatient(null);
                                 setSelectedPhysician(null);
                                 setMeetingType('Virtual');
                             }
                         }}
                         onSelectEvent={(e) => {
-                            setModal({ open: true, type: 'update', data: e });
-                            setSelectedPatient(e?.patient_NationalID);
-                            setSelectedPhysician(e?.consultant_NationalID);
-                            setMeetingType(e?.meetingtype);
+                            if (new Date(e.start) > new Date()) {
+                                setModal({ open: true, type: 'update', data: e, show: true });
+                                setSelectedPatient(e?.patient_NationalID);
+                                setSelectedPhysician(e?.consultant_NationalID);
+                                setMeetingType(e?.meetingtype);
+                            } else {
+                                setModal({ open: true, type: 'update', data: e, show: false });
+                                setSelectedPatient(e?.patient_NationalID);
+                                setSelectedPhysician(e?.consultant_NationalID);
+                                setMeetingType(e?.meetingtype);
+                            }
                         }}
                         style={{ backgroundColor: '#ffffff', height: '73.5vh' }}
                         eventPropGetter={eventStyleGetter}
@@ -357,11 +392,25 @@ export default function Scheduler() {
                                                     variant="text"
                                                     sx={{ color: 'red' }}
                                                 >
-                                                    Cancel
+                                                    {modal?.show ? 'Cancel' : 'Close'}
                                                 </Button>
-                                                <Button type="submit" variant="text" sx={{ color: COLORS.secondory }}>
-                                                    {modal.type == 'add' ? 'Save' : 'Update'}
-                                                </Button>
+                                                {modal?.show == true && (
+                                                    <>
+                                                        {modal.type !== 'add' && (
+                                                            <Button
+                                                                type="submit"
+                                                                variant="text"
+                                                                sx={{ color: 'red' }}
+                                                                onClick={handleDeleteVisit}
+                                                            >
+                                                                Delete
+                                                            </Button>
+                                                        )}
+                                                        <Button type="submit" variant="text" sx={{ color: COLORS.secondory }}>
+                                                            {modal.type == 'add' ? 'Save' : 'Update'}
+                                                        </Button>
+                                                    </>
+                                                )}
                                             </>
                                         )}
                                     </Box>
