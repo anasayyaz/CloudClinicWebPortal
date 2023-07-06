@@ -49,7 +49,7 @@ import PreviousVisits from 'views/components/previousVisits';
 import ModalCustom from 'ui-component/modals/ModalCustom';
 import Autocomplete from '@mui/material/Autocomplete';
 import { COLORS } from 'constants/colors';
-const MeetingRoom1 = (props) => {
+const MeetingRoom1 = ({ state }) => {
     const { user } = useSelector((state) => state?.user);
     const [roomName, setroomName] = useState('');
     const [vr, setvr] = useState(null);
@@ -70,7 +70,7 @@ const MeetingRoom1 = (props) => {
         const domain = 'meet.cloudclinic.ai';
         const visitresponse = await axios({
             method: 'get',
-            url: `${BASE_URL}api/visit/getVisit/586`,
+            url: `${BASE_URL}api/visit/getVisit/${state?.id}`,
             headers: {
                 Authorization: `Bearer ${user?.token}`
             }
@@ -84,6 +84,7 @@ const MeetingRoom1 = (props) => {
         setFollowUpDate(e.target.value);
     };
     useEffect(() => {
+        console.log(state);
         setLoading(true);
         if (window.JitsiMeetExternalAPI) {
             startConference();
@@ -97,7 +98,7 @@ const MeetingRoom1 = (props) => {
     //     loading: loadingvisitData,
     //     error: errorvisitData,
     //     refetch: refetchvisitData
-    // } = useFetch(`${BASE_URL}api/visit/getVisit/586`);
+    // } = useFetch(`${BASE_URL}api/visit/getVisit/state?.id`);
 
     async function getSpeciality() {
         const visitresponse = await axios({
@@ -192,7 +193,12 @@ const MeetingRoom1 = (props) => {
                     >
                         <CloseIcon />
                     </IconButton>
-                    <Prescription cname={'Usman'} visitID={586} />
+                    <Prescription
+                        cname={'Usman'}
+                        visitID={state?.id}
+                        patient_NationalID={state?.patient_NationalID}
+                        consultant_NationalID={state?.consultant_NationalID}
+                    />
                 </Box>
             </ModalCustom>
             <ModalCustom open={openDiagnosis} title={'Diagnosis'}>
@@ -200,7 +206,7 @@ const MeetingRoom1 = (props) => {
                     <IconButton color="inherit" onClick={() => setOpenDiagnosis(false)} sx={{ position: 'absolute', top: 10, right: 10 }}>
                         <CloseIcon />
                     </IconButton>
-                    <Diagnosis cname={'Usman'} visitID={586} />
+                    <Diagnosis cname={'Usman'} visitID={state?.id} patient_NationalID={state?.patient_NationalID} />
                 </Box>
             </ModalCustom>
             {/* <Dialog open={openPreviousVisits} onClose={() => setOpenPreviousVisits(false)}>
@@ -238,7 +244,7 @@ const MeetingRoom1 = (props) => {
 
             {/* <Dialog open={openDiagnosis} onClose={() => setOpenDiagnosis(false)}>
                 <DialogContent style={{ width: '500px' }}>
-                    <Diagnosis cname={'Usman'} visitID={586} />
+                    <Diagnosis cname={'Usman'} visitID={state?.id} />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenDiagnosis(false)}>Cancel</Button>
@@ -254,7 +260,7 @@ const MeetingRoom1 = (props) => {
             </Dialog>
             {/* <Grid item lg={12} xs={12}>
                 <Typography variant="h4" component="h3" sx={{ color: 'black', p: 1 }}>
-                    ◉ Visit ID: <span style={{ color: '#0096FF' }}>586</span> ◉ Patient Name:{' '}
+                    ◉ Visit ID: <span style={{ color: '#0096FF' }}>state?.id</span> ◉ Patient Name:{' '}
                     <span style={{ color: '#0096FF' }}>Ahmad Ali bhatti</span> ◉ Doctor Name:{' '}
                     <span style={{ color: '#0096FF' }}>Zahid Lateef</span>
                 </Typography>
@@ -304,7 +310,7 @@ const MeetingRoom1 = (props) => {
                     {!loading && (
                         <>
                             <Grid item lg={5} xs={12}>
-                                <VitalSign visitID={586} show={true} />
+                                <VitalSign visitID={state?.id} show={true} />
                             </Grid>
                             <Grid item lg={7}>
                                 <Grid sx={{ height: '50vh', borderRadius: 3 }}>

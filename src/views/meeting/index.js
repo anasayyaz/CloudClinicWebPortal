@@ -7,7 +7,7 @@ import { useLocation } from 'react-router';
 const Meeting = (props) => {
     const { state } = useLocation();
 
-    return <div>{false ? <MeetingRoom1 /> : <MeetingRoom2 state={state} />}</div>;
+    return <div>{true ? <MeetingRoom1 state={state} /> : <MeetingRoom2 state={state} />}</div>;
 };
 
 export default Meeting;
