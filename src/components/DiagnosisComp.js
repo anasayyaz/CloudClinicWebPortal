@@ -34,7 +34,7 @@ const DiagnosisComp = () => {
     };
 
     return (
-        <Box sx={{ width: '100%', height: '33vh', backgroundColor: '#fff', borderRadius: 3, p: 1 }}>
+        <Box sx={{ width: '100%', height: '33vh', backgroundColor: '#66aeff', borderRadius: 3, p: 1 }}>
             {diagnosis && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Box sx={{ display: 'flex', flex: 1 }}>
@@ -62,7 +62,11 @@ const DiagnosisComp = () => {
                                 backgroundColor: '#f8fafc'
                             }}
                         />
-                        <Button variant="outlined" onClick={handleAdd}>
+                        <Button
+                            variant="outlined"
+                            onClick={handleAdd}
+                            sx={{ backgroundColor: '#fff', '&:hover': { backgroundColor: '#d1e7ff' } }}
+                        >
                             Add
                         </Button>
                     </Box>

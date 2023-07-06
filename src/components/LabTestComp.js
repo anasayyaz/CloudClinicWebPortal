@@ -31,7 +31,7 @@ const LabTestComp = () => {
     };
 
     return (
-        <Box sx={{ width: '100%', height: '25vh', backgroundColor: '#fff', borderRadius: 3, p: 1 }}>
+        <Box sx={{ width: '100%', height: '25vh', backgroundColor: '#66aeff', borderRadius: 3, p: 1 }}>
             {labTestType && (
                 <Box sx={{ display: 'flex', gap: 1 }}>
                     <AutoCompleteCom
@@ -43,7 +43,11 @@ const LabTestComp = () => {
                         showKey={['code', 'test']}
                         onClick={() => console.log('hello kjk ')}
                     />
-                    <Button variant="outlined" onClick={handleAdd}>
+                    <Button
+                        variant="outlined"
+                        onClick={handleAdd}
+                        sx={{ backgroundColor: '#fff', '&:hover': { backgroundColor: '#d1e7ff' } }}
+                    >
                         Add
                     </Button>
                 </Box>

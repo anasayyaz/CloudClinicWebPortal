@@ -5,12 +5,14 @@ import { BASE_URL } from 'constants/baseUrl';
 import useFetch from 'hooks/useFetch';
 
 const MedicineComp = () => {
-    const {
-        data: medicine,
-        loading: loadingMedicine,
-        error: errorMedicine,
-        refetch: refetchMedicine
-    } = useFetch(`${BASE_URL}api/medicine`);
+    // const {
+    //     data: medicine,
+    //     loading: loadingMedicine,
+    //     error: errorMedicine,
+    //     refetch: refetchMedicine
+    // } = useFetch(`${BASE_URL}api/medicine`);
+
+    const medicine = JSON.parse(localStorage.getItem('medicine'));
 
     const {
         data: route,
@@ -88,7 +90,7 @@ const MedicineComp = () => {
     const handleSelectedRoute = useCallback((e) => setSelectedRoute(e.target.value), []);
 
     return (
-        <Box sx={{ width: '100%', height: '100%', backgroundColor: '#fff', borderRadius: 3, p: 1 }}>
+        <Box sx={{ width: '100%', height: '100%', backgroundColor: '#66aeff', borderRadius: 3, p: 1 }}>
             {medicine && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Box sx={{ display: 'flex', flex: 1, gap: 1 }}>
@@ -108,6 +110,12 @@ const MedicineComp = () => {
                             <FormControlLabel
                                 control={
                                     <Checkbox
+                                        sx={{
+                                            color: '#fff',
+                                            '&.Mui-checked': {
+                                                color: '#fff'
+                                            }
+                                        }}
                                         checked={selectedFrequency?.morning}
                                         onChange={(e) => setSelectedFrequency({ ...selectedFrequency, morning: e.target.checked })}
                                     />
@@ -117,6 +125,12 @@ const MedicineComp = () => {
                             <FormControlLabel
                                 control={
                                     <Checkbox
+                                        sx={{
+                                            color: '#fff',
+                                            '&.Mui-checked': {
+                                                color: '#fff'
+                                            }
+                                        }}
                                         checked={selectedFrequency?.evening}
                                         onChange={(e) => setSelectedFrequency({ ...selectedFrequency, evening: e.target.checked })}
                                     />
@@ -126,6 +140,12 @@ const MedicineComp = () => {
                             <FormControlLabel
                                 control={
                                     <Checkbox
+                                        sx={{
+                                            color: '#fff',
+                                            '&.Mui-checked': {
+                                                color: '#fff'
+                                            }
+                                        }}
                                         checked={selectedFrequency?.night}
                                         onChange={(e) => setSelectedFrequency({ ...selectedFrequency, night: e.target.checked })}
                                     />
@@ -210,7 +230,11 @@ const MedicineComp = () => {
                                 backgroundColor: '#f8fafc'
                             }}
                         />
-                        <Button variant="outlined" onClick={handleAdd}>
+                        <Button
+                            variant="outlined"
+                            onClick={handleAdd}
+                            sx={{ backgroundColor: '#fff', '&:hover': { backgroundColor: '#d1e7ff' } }}
+                        >
                             Add
                         </Button>
                     </Box>
@@ -245,7 +269,7 @@ const MedicineComp = () => {
                 </Box>
             )}
 
-            {loadingMedicine && (
+            {loadingRoute && (
                 <Box
                     sx={{
                         display: 'flex',
