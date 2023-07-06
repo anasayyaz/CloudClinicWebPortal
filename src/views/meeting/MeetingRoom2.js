@@ -44,7 +44,7 @@ const MeetingRoom2 = ({ state }) => {
     async function startConference() {
         const visitresponse = await axios({
             method: 'get',
-            url: `${BASE_URL}api/visit/getVisit/${state?.id}`,
+            url: `${BASE_URL}api/visit/getVisit/state?.id`,
             headers: {
                 Authorization: `Bearer ${user?.token}`
             }
@@ -166,7 +166,7 @@ const MeetingRoom2 = ({ state }) => {
 
                     <Grid item lg={12} sx={{ height: '46.5vh' }}>
                         <Box sx={{ width: '105%', height: '100%', backgroundColor: '#adadad', borderRadius: 3 }}>
-                            <VitalSign visitID={586} show={false} />
+                            <VitalSign visitID={state?.id} show={false} />
                         </Box>
                     </Grid>
 

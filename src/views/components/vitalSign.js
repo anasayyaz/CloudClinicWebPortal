@@ -205,6 +205,25 @@ const VitalSign = (props) => {
                     </ModalCustom>
                 </>
             )}
+            {!vitalSignData && (
+                <Grid
+                    lg={12}
+                    xs={12}
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        flex: 1,
+                        height: '100%',
+                        backgroundColor: '#636f83',
+                        border: 5,
+                        borderColor: '#DDE6ED',
+                        borderRadius: 3,
+                        p: 1
+                    }}
+                >
+                    <Typography sx={{ color: 'white', flex: 1 }}>Vitals not uploaded</Typography>
+                </Grid>
+            )}
             {!!vitalSignData && (
                 <Grid
                     lg={12}

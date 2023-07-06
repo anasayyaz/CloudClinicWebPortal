@@ -23,123 +23,112 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 // import LoadingSpinner from './LoadingSpinner';
-const Diagnosis = (props) => {
+const Prescription = (props) => {
     return (
         <Grid container columnSpacing={2} sx={{ width: '100%', height: '100%' }}>
             {/* -----------------------------  Button Grid */}
 
-            <MedicineComp />
+            <MedicineComp
+                visitID={props.visitID}
+                patient_NationalID={props.patient_NationalID}
+                consultant_NationalID={props.consultant_NationalID}
+            />
         </Grid>
     );
 };
-export default Diagnosis;
+export default Prescription;
 
-const MedicineComp = () => {
+const MedicineComp = (props) => {
     const { user } = useSelector((state) => state.user);
 
     const {
-        data: medicine,
+        data: diagnosis,
         loading: loadingMedicine,
         error: errorMedicine,
         refetch: refetchMedicine
     } = useFetch(`${BASE_URL}api/diagnostic`);
-
-    // let medicine = [{ medicineID: 1, name: '123123', genericName: '123123' }];
-    const {
-        data: route,
-        loading: loadingRoute,
-        error: errorRoute,
-        refetch: refetchRoute
-    } = useFetch(`${BASE_URL}api/SetupItem/GetByType/route`);
-
-    const {
-        data: direction,
-        loading: loadingDirection,
-        error: errorDirection,
-        refetch: refetchDirection
-    } = useFetch(`${BASE_URL}api/SetupItem/GetByType/direction`);
-
-    const {
-        data: frequency,
-        loading: loadingFrequency,
-        error: errorFrequency,
-        refetch: refetchFrequency
-    } = useFetch(`${BASE_URL}api/SetupItem/GetByType/frequency`);
-
-    const {
-        data: duration,
-        loading: loadingDuration,
-        error: errorDuration,
-        refetch: refetchDuration
-    } = useFetch(`${BASE_URL}api/SetupItem/GetByType/duration`);
-
-    const {
-        data: doseUnit,
-        loading: loadingDoseUnit,
-        error: errorDoseUnit,
-        refetch: refetchDoseUnit
-    } = useFetch(`${BASE_URL}api/SetupItem/GetByType/doseunit`);
 
     const {
         data: patientPrescription,
         loading: loadingPatientPrescription,
         error: errorPatientPrescription,
         refetch: refetchPatientPrescription
-    } = useFetch(`${BASE_URL}api/patientdiagnostic/diagnosticsByPatient/87da3946-30ad-4d8a-995c-8db003b6233c`);
+    } = useFetch(`${BASE_URL}api/patientdiagnostic/diagnosticsByPatient/${props.patient_NationalID}`);
 
-    const [selectedMedicine, setSelectedMedicine] = useState('');
-    const [selectedRoute, setSelectedRoute] = useState('');
-    const [selectedDirection, setSelectedDirection] = useState('');
-    const [selectedFrequency, setSelectedFrequency] = useState('');
-    const [selectedDuration, setSelectedDuration] = useState('');
-    const [qty, setQty] = useState('');
-    const [selectedDoseUnit, setSelectedDoseUnit] = useState('');
-    const [instruction, setInstruction] = useState('');
+    const [selectedDiagnosis, setSelectedDiagnosis] = useState('');
+    const [loadingContinue, setLoadingcontinue] = useState(false);
+    const [loadingDiscontinue, setLoadingDiscontinue] = useState(false);
 
     const [prescriptionList, setPrescriptionList] = useState([]);
 
     const submitAllPrescriptionHandler = async () => {
-        console.log(prescriptionList);
         for (let i = 0; i < prescriptionList.length; i++) {
-            await createPrescription(
-                prescriptionList[i]?.medicine?.split(': ')[0],
-                prescriptionList[i].duration,
-                prescriptionList[i].durationUnit,
-                prescriptionList[i].route,
-                prescriptionList[i].direction,
-                prescriptionList[i].frequency,
-                prescriptionList[i].dosage,
-                prescriptionList[i].doseNum
-            );
+            await createPrescription(prescriptionList[i]?.diagnosis?.split(': ')[0]);
         }
+        refetchPatientPrescription();
+    };
+    const discontinuePrescription = async (prescriptionId) => {
+        setLoadingDiscontinue(true);
+        try {
+            const del = await fetch(`${BASE_URL}api/prescription/${prescriptionId}`, {
+                method: 'DELETE',
+                data: {
+                    deletedBy: user?.userId,
+                    deletedOn: new Date()
+                },
+                headers: {
+                    Authorization: `Bearer ${user?.token}`
+                }
+            });
+        } catch (err) {
+            console.error(err.message);
+            setLoadingDiscontinue(false);
+        }
+        setLoadingDiscontinue(false);
+        refetchPatientPrescription();
     };
 
-    const createPrescription = async (medicine, duration, durationUnit, route, direction, frequency, dosage, doseNum) => {
+    const continuePrescription = async (item) => {
+        setLoadingcontinue(true);
         try {
             const body = {
-                MedicineID: medicine,
-                DosageInstruction: 'ddd',
-                RefilDetails: 'refil',
-                medicineName: 'Zostat 50Mg Tab 20 s',
-                medicineGenericName: 'Losartan',
-                physicianName: 'Dr Usman Bhatti',
-                dose: doseNum,
-                doseUnit: durationUnit,
-                route: route,
-                direction: direction,
-                frequency: frequency,
-                duration: duration,
-                durationUnit: durationUnit,
-                dosageInstruction: dosage,
-                refilDetails: ' refil',
+                lastModifiedOn: new Date(),
+                lastModifiedBy: user?.userId,
+
+                VisitID: props.visitID,
+                Patient_NationalID: props.patient_NationalID,
+                Consultant_NationalID: props.consultant_NationalID,
+                status: 'Continued',
+                isDeleted: false
+            };
+            console.log(body);
+            const responseSubmitPrescription = await axios({
+                method: 'put',
+                url: `${BASE_URL}api/prescription/updatePrescription/${item.prescriptionId}`,
+                data: body,
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${user?.token}`
+                }
+            });
+        } catch (err) {
+            console.error(err.message);
+            setLoadingcontinue(false);
+        }
+        refetchPatientPrescription();
+        setLoadingcontinue(false);
+    };
+    const createPrescription = async (diagnosis) => {
+        try {
+            const body = {
                 createdOn: new Date(),
                 createdBy: user?.userId,
                 // "prescriptionId": 46,
                 isDeleted: false,
-                medicineID: medicine,
-                VisitID: 586,
-                Patient_NationalID: '87da3946-30ad-4d8a-995c-8db003b6233c',
-                Consultant_NationalID: 'd0616ce6-97f7-4dd0-86b0-857900f1b7af',
+                medicineID: diagnosis,
+                VisitID: props.visitID,
+                Patient_NationalID: props.patient_NationalID,
+                Consultant_NationalID: props.consultant_NationalID,
                 status: 'Continued'
             };
             console.log(body);
@@ -155,35 +144,20 @@ const MedicineComp = () => {
         } catch (err) {
             console.error(err.message);
         }
+        setPrescriptionList([]);
     };
     const handleAdd = () => {
         const prescription = {
-            medicine: selectedMedicine,
-            route: selectedRoute,
-            direction: selectedDirection,
-            duration: selectedDuration,
-            frequency: selectedFrequency,
-            doseUnit: `${qty} ${selectedDoseUnit}`,
-            instruction: instruction
+            diagnosis: selectedDiagnosis
         };
 
         setPrescriptionList([...prescriptionList, prescription]);
-        setSelectedMedicine('');
-        setSelectedDirection('');
-        setSelectedDoseUnit('');
-        setSelectedFrequency('');
-        setSelectedDuration('');
-        setInstruction('');
-        setSelectedRoute('');
-        setQty('');
     };
 
-    const handleDelete = (medicine) => {
-        const newList = prescriptionList?.filter((item) => item.medicine !== medicine);
+    const handleDelete = (diagnosis) => {
+        const newList = prescriptionList?.filter((item) => item.diagnosis !== diagnosis);
         setPrescriptionList(newList);
     };
-
-    const handleSelectedRoute = useCallback((e) => setSelectedRoute(e.target.value), []);
 
     return (
         <Box sx={{ width: '100%', height: '100%', backgroundColor: '#fff', borderRadius: 3, p: 1 }}>
@@ -192,75 +166,87 @@ const MedicineComp = () => {
                     {' '}
                     <Accordion>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
-                            <Typography sx={{ color: '#1565c0' }}>Current Diagnosis</Typography>
+                            <Typography sx={{ color: '#0E86D4', fontWeight: '600' }}>Current Diagnosis</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                             {patientPrescription &&
                                 patientPrescription?.map((item) => (
-                                    <Box sx={{ p: 1, m: 1, borderRadius: 3, backgroundColor: '#eef2f6' }}>
-                                        <Box sx={{ display: 'flex' }}>
-                                            <Typography sx={{ fontWeight: '600', flex: 1 }}>{item?.medicineName}</Typography>
-                                            <Button
-                                                size="small"
-                                                sx={{ p: 0, color: 'red' }}
-                                                variant="standard"
-                                                // onClick={() => handleDelete(item?.medicine)}
-                                            >
-                                                Discontinue
-                                            </Button>
-                                        </Box>
-                                        <Typography>
-                                            {item?.frequency} {item?.duration}
-                                        </Typography>
-
-                                        {item?.instruction && <Typography>{item?.instruction}</Typography>}
-                                    </Box>
+                                    <>
+                                        {' '}
+                                        {item?.status == 'Continued' && (
+                                            <>
+                                                <Box sx={{ p: 1, m: 1, borderRadius: 3, backgroundColor: '#eef2f6' }}>
+                                                    <Box sx={{ display: 'flex' }}>
+                                                        <Typography sx={{ fontWeight: '600', flex: 1 }}>
+                                                            {item?.name} {item?.diseaseDiscription}
+                                                        </Typography>
+                                                        {!loadingDiscontinue && (
+                                                            <Button
+                                                                size="small"
+                                                                sx={{ p: 0, color: 'red' }}
+                                                                variant="standard"
+                                                                onClick={() => discontinuePrescription(item?.prescriptionId)}
+                                                            >
+                                                                Discontinue
+                                                            </Button>
+                                                        )}
+                                                        {loadingDiscontinue && <CircularProgress size={25} color="primary" />}
+                                                    </Box>
+                                                </Box>
+                                            </>
+                                        )}
+                                    </>
                                 ))}
                         </AccordionDetails>
                     </Accordion>
                     <Accordion>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel2a-content" id="panel2a-header">
-                            <Typography sx={{ color: '#1565c0' }}>Discontinued Diagnosis</Typography>
+                            <Typography sx={{ color: '#0E86D4', fontWeight: '600' }}>Discontinued Diagnosis</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                             {patientPrescription &&
                                 patientPrescription?.map((item) => (
-                                    <Box sx={{ p: 1, m: 1, borderRadius: 3, backgroundColor: '#eef2f6' }}>
-                                        <Box sx={{ display: 'flex' }}>
-                                            <Typography sx={{ fontWeight: '600', flex: 1 }}>{item?.medicineName}</Typography>
-                                            <Button
-                                                size="small"
-                                                sx={{ p: 0, color: 'green' }}
-                                                variant="standard"
-                                                // onClick={() => handleDelete(item?.medicine)}
-                                            >
-                                                Continue
-                                            </Button>
-                                        </Box>
-                                        <Typography>
-                                            {item?.frequency}
-                                            {item?.duration}
-                                        </Typography>
-
-                                        {item?.instruction && <Typography>{item?.instruction}</Typography>}
-                                    </Box>
+                                    <>
+                                        {' '}
+                                        {item?.status == 'Discontinued' && (
+                                            <>
+                                                <Box sx={{ p: 1, m: 1, borderRadius: 3, backgroundColor: '#eef2f6' }}>
+                                                    <Box sx={{ display: 'flex' }}>
+                                                        <Typography sx={{ fontWeight: '600', flex: 1 }}>
+                                                            {item?.name} {item?.diseaseDiscription}
+                                                        </Typography>{' '}
+                                                        {!loadingContinue && (
+                                                            <Button
+                                                                size="small"
+                                                                sx={{ p: 0, color: 'green' }}
+                                                                variant="standard"
+                                                                onClick={() => continuePrescription(item)}
+                                                            >
+                                                                Continue
+                                                            </Button>
+                                                        )}
+                                                        {loadingContinue && <CircularProgress size={25} color="primary" />}
+                                                    </Box>
+                                                </Box>
+                                            </>
+                                        )}
+                                    </>
                                 ))}
                         </AccordionDetails>
                     </Accordion>{' '}
-                    {medicine && (
+                    {diagnosis && (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
                             <Box sx={{ display: 'flex', flex: 1, gap: 1 }}>
                                 <Box sx={{ display: 'flex', flex: 1 }}>
                                     <AutoCompleteCom
-                                        listName={'medicine'}
-                                        data={medicine}
-                                        onChange={(e) => setSelectedMedicine(e.target.value)}
-                                        value={selectedMedicine}
+                                        listName={'diagnosis'}
+                                        data={diagnosis}
+                                        onChange={(e) => setSelectedDiagnosis(e.target.value)}
+                                        value={selectedDiagnosis}
                                         placeholder={'Diagnosis List'}
-                                        showKey={['name', 'code', 'diseaseDiscription']}
+                                        showKey={['code', 'name', 'diseaseDiscription']}
                                     />
                                 </Box>
-                                {console.log('Med Inner')}
                             </Box>
 
                             <Box sx={{ display: 'flex', flex: 1, gap: 1 }}>
@@ -275,28 +261,27 @@ const MedicineComp = () => {
                             prescriptionList?.map((item) => (
                                 <Box sx={{ p: 1, m: 1, borderRadius: 3, backgroundColor: '#eef2f6' }}>
                                     <Box sx={{ display: 'flex' }}>
-                                        <Typography sx={{ fontWeight: '600', flex: 1 }}>{item?.medicine}</Typography>
+                                        <Typography sx={{ fontWeight: '600', flex: 1 }}>{item?.diagnosis}</Typography>
                                         <Button
                                             size="small"
                                             sx={{ p: 0, color: 'red' }}
                                             variant="standard"
-                                            onClick={() => handleDelete(item?.medicine)}
+                                            onClick={() => handleDelete(item?.diagnosis)}
                                         >
                                             Delete
                                         </Button>
                                     </Box>
                                     <Typography>
                                         {item?.frequency}
-                                        {item?.duration}
+                                        {' for '} {item?.duration}
                                     </Typography>
-
-                                    {item?.instruction && <Typography>{item?.instruction}</Typography>}
                                 </Box>
                             ))}
-
-                        <Button sx={{ marginTop: 1 }} variant="outlined" onClick={submitAllPrescriptionHandler}>
-                            Submit All
-                        </Button>
+                        {prescriptionList.length > 0 && (
+                            <Button sx={{ marginTop: 1 }} variant="outlined" onClick={submitAllPrescriptionHandler}>
+                                Submit All
+                            </Button>
+                        )}
                     </Box>
                 </>
             )}
@@ -330,7 +315,7 @@ const AutoCompleteCom = memo(({ data, onChange, value, placeholder, showKey, lis
                     data.map((item, index) => (
                         <option
                             key={index}
-                            value={`${item[showKey[0]]} ${listName == 'medicine' ? `: ${item[showKey[1]]} ( ${item[showKey[2]]} )` : ''}`}
+                            value={`${item[showKey[0]]} ${listName == 'diagnosis' ? `: ${item[showKey[1]]} ( ${item[showKey[2]]} )` : ''}`}
                         />
                     ))}
             </datalist>
