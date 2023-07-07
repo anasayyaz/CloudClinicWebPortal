@@ -23,7 +23,7 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 // import LoadingSpinner from './LoadingSpinner';
-const Prescription = (props) => {
+const Diagnosis = (props) => {
     return (
         <Grid container columnSpacing={2} sx={{ width: '100%', height: '100%' }}>
             {/* -----------------------------  Button Grid */}
@@ -36,41 +36,42 @@ const Prescription = (props) => {
         </Grid>
     );
 };
-export default Prescription;
+export default Diagnosis;
 
 const MedicineComp = (props) => {
     const { user } = useSelector((state) => state.user);
 
     const {
         data: diagnosis,
-        loading: loadingMedicine,
-        error: errorMedicine,
-        refetch: refetchMedicine
+        loading: loadingDiagnosis,
+        error: errorDiagnosis,
+        refetch: refetchDiagnosis
     } = useFetch(`${BASE_URL}api/diagnostic`);
 
     const {
-        data: patientPrescription,
-        loading: loadingPatientPrescription,
+        data: patientDiagnosis,
+        loading: loadingPatientDiagnosis,
         error: errorPatientPrescription,
-        refetch: refetchPatientPrescription
+        refetch: refetchPatientDiagnosis
     } = useFetch(`${BASE_URL}api/patientdiagnostic/diagnosticsByPatient/${props.patient_NationalID}`);
 
     const [selectedDiagnosis, setSelectedDiagnosis] = useState('');
     const [loadingContinue, setLoadingcontinue] = useState(false);
     const [loadingDiscontinue, setLoadingDiscontinue] = useState(false);
 
-    const [prescriptionList, setPrescriptionList] = useState([]);
+    const [diagnosisList, setDiagnosisList] = useState([]);
 
-    const submitAllPrescriptionHandler = async () => {
-        for (let i = 0; i < prescriptionList.length; i++) {
-            await createPrescription(prescriptionList[i]?.diagnosis?.split(': ')[0]);
+    const submitAllDiagnosisHandler = async () => {
+        console.log(diagnosisList);
+        for (let i = 0; i < diagnosisList.length; i++) {
+            await createDiagnosis(diagnosisList[i]?.diagnosis?.split(': ')[0]);
         }
-        refetchPatientPrescription();
+        refetchPatientDiagnosis();
     };
-    const discontinuePrescription = async (prescriptionId) => {
+    const discontinueDiagnosis = async (diagnosisCode) => {
         setLoadingDiscontinue(true);
         try {
-            const del = await fetch(`${BASE_URL}api/prescription/${prescriptionId}`, {
+            const del = await fetch(`${BASE_URL}api/patientdiagnostic/${diagnosisCode}`, {
                 method: 'DELETE',
                 data: {
                     deletedBy: user?.userId,
@@ -85,10 +86,10 @@ const MedicineComp = (props) => {
             setLoadingDiscontinue(false);
         }
         setLoadingDiscontinue(false);
-        refetchPatientPrescription();
+        refetchPatientDiagnosis();
     };
 
-    const continuePrescription = async (item) => {
+    const continueDiagnosis = async (item) => {
         setLoadingcontinue(true);
         try {
             const body = {
@@ -102,9 +103,9 @@ const MedicineComp = (props) => {
                 isDeleted: false
             };
             console.log(body);
-            const responseSubmitPrescription = await axios({
+            const responseSubmitDiagnosis = await axios({
                 method: 'put',
-                url: `${BASE_URL}api/prescription/updatePrescription/${item.prescriptionId}`,
+                url: `${BASE_URL}api/patientdiagnostic/${item.id}`,
                 data: body,
                 headers: {
                     'Content-Type': 'application/json',
@@ -115,26 +116,26 @@ const MedicineComp = (props) => {
             console.error(err.message);
             setLoadingcontinue(false);
         }
-        refetchPatientPrescription();
+        refetchPatientDiagnosis();
         setLoadingcontinue(false);
     };
-    const createPrescription = async (diagnosis) => {
+    const createDiagnosis = async (code) => {
+        console.log(code);
         try {
             const body = {
                 createdOn: new Date(),
                 createdBy: user?.userId,
-                // "prescriptionId": 46,
                 isDeleted: false,
-                medicineID: diagnosis,
                 VisitID: props.visitID,
                 Patient_NationalID: props.patient_NationalID,
                 Consultant_NationalID: props.consultant_NationalID,
-                status: 'Continued'
+                status: 'Continued',
+                code: code
             };
             console.log(body);
-            const responseSubmitPrescription = await axios({
+            const responseSubmitDiagnosis = await axios({
                 method: 'post',
-                url: `${BASE_URL}api/prescription`,
+                url: `${BASE_URL}api/patientdiagnostic`,
                 data: body,
                 headers: {
                     'Content-Type': 'application/json',
@@ -144,33 +145,38 @@ const MedicineComp = (props) => {
         } catch (err) {
             console.error(err.message);
         }
-        setPrescriptionList([]);
+        setDiagnosisList([]);
     };
     const handleAdd = () => {
-        const prescription = {
+        const diagnosis = {
             diagnosis: selectedDiagnosis
         };
 
-        setPrescriptionList([...prescriptionList, prescription]);
+        setDiagnosisList([...diagnosisList, diagnosis]);
     };
 
     const handleDelete = (diagnosis) => {
-        const newList = prescriptionList?.filter((item) => item.diagnosis !== diagnosis);
-        setPrescriptionList(newList);
+        const newList = diagnosisList?.filter((item) => item.diagnosis !== diagnosis);
+        setDiagnosisList(newList);
     };
 
     return (
         <Box sx={{ width: '100%', height: '100%', backgroundColor: '#fff', borderRadius: 3, p: 1 }}>
-            {!loadingMedicine && (
+            {!loadingDiagnosis && (
                 <>
                     {' '}
                     <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
-                            <Typography sx={{ color: '#0E86D4', fontWeight: '600' }}>Current Diagnosis</Typography>
+                        <AccordionSummary
+                            sx={{ backgroundColor: '#0E86D4', borderRadius: 3 }}
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                        >
+                            <Typography sx={{ color: 'white', fontWeight: '600' }}>Current Diagnosis</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            {patientPrescription &&
-                                patientPrescription?.map((item) => (
+                            {patientDiagnosis &&
+                                patientDiagnosis?.map((item) => (
                                     <>
                                         {' '}
                                         {item?.status == 'Continued' && (
@@ -185,7 +191,7 @@ const MedicineComp = (props) => {
                                                                 size="small"
                                                                 sx={{ p: 0, color: 'red' }}
                                                                 variant="standard"
-                                                                onClick={() => discontinuePrescription(item?.prescriptionId)}
+                                                                onClick={() => discontinueDiagnosis(item?.id)}
                                                             >
                                                                 Discontinue
                                                             </Button>
@@ -200,12 +206,17 @@ const MedicineComp = (props) => {
                         </AccordionDetails>
                     </Accordion>
                     <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel2a-content" id="panel2a-header">
-                            <Typography sx={{ color: '#0E86D4', fontWeight: '600' }}>Discontinued Diagnosis</Typography>
+                        <AccordionSummary
+                            sx={{ backgroundColor: '#0E86D4', borderRadius: 3 }}
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel2a-content"
+                            id="panel2a-header"
+                        >
+                            <Typography sx={{ color: 'white', fontWeight: '600' }}>Discontinued Diagnosis</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            {patientPrescription &&
-                                patientPrescription?.map((item) => (
+                            {patientDiagnosis &&
+                                patientDiagnosis?.map((item) => (
                                     <>
                                         {' '}
                                         {item?.status == 'Discontinued' && (
@@ -220,7 +231,7 @@ const MedicineComp = (props) => {
                                                                 size="small"
                                                                 sx={{ p: 0, color: 'green' }}
                                                                 variant="standard"
-                                                                onClick={() => continuePrescription(item)}
+                                                                onClick={() => continueDiagnosis(item)}
                                                             >
                                                                 Continue
                                                             </Button>
@@ -257,8 +268,8 @@ const MedicineComp = (props) => {
                         </Box>
                     )}
                     <Box>
-                        {prescriptionList &&
-                            prescriptionList?.map((item) => (
+                        {diagnosisList &&
+                            diagnosisList?.map((item) => (
                                 <Box sx={{ p: 1, m: 1, borderRadius: 3, backgroundColor: '#eef2f6' }}>
                                     <Box sx={{ display: 'flex' }}>
                                         <Typography sx={{ fontWeight: '600', flex: 1 }}>{item?.diagnosis}</Typography>
@@ -271,21 +282,17 @@ const MedicineComp = (props) => {
                                             Delete
                                         </Button>
                                     </Box>
-                                    <Typography>
-                                        {item?.frequency}
-                                        {' for '} {item?.duration}
-                                    </Typography>
                                 </Box>
                             ))}
-                        {prescriptionList.length > 0 && (
-                            <Button sx={{ marginTop: 1 }} variant="outlined" onClick={submitAllPrescriptionHandler}>
+                        {diagnosisList.length > 0 && (
+                            <Button sx={{ marginTop: 1 }} variant="outlined" onClick={submitAllDiagnosisHandler}>
                                 Submit All
                             </Button>
                         )}
                     </Box>
                 </>
             )}
-            {loadingMedicine && (
+            {loadingDiagnosis && (
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', alignContent: 'center' }}>
                     <CircularProgress size={35} color="primary" />
                 </Box>

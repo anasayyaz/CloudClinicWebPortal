@@ -1,5 +1,5 @@
 // project importsla
-import React, { useRef, useState, useEffect, useContext } from 'react';
+import React, { useRef, useState, useEffect, useContext, memo } from 'react';
 import MainCard from 'ui-component/cards/MainCard';
 import { styled } from '@mui/material/styles';
 import {
@@ -148,13 +148,21 @@ const MeetingRoom1 = ({ state }) => {
                     >
                         <CloseIcon />
                     </IconButton>
-                    <Autocomplete
+                    {/* <Autocomplete
                         disablePortal
                         id="combo-box-demo"
                         options={speciality}
-                        sx={{ width: 300 }}
+                        sx={{ width: 300, flex: 1, zIndex: 999 }}
                         getOptionLabel={(option) => `${option}`}
                         renderInput={(params) => <TextField {...params} label="Select Speciality" />}
+                    /> */}
+                    <AutoCompleteCom
+                        listName={'speciality'}
+                        data={speciality}
+                        // onChange={(e) => setSelectedDiagnosis(e.target.value)}
+                        // value={selectedDiagnosis}
+                        placeholder={'Select Speciality'}
+                        showKey={['index', 'speciality']}
                     />
                     <Button onClick={() => setOpenConsultationNeeded(false)} variant="text" sx={{ color: 'red' }}>
                         Cancel
@@ -169,7 +177,7 @@ const MeetingRoom1 = ({ state }) => {
                     <IconButton color="inherit" onClick={() => setOpenLabTest(false)} sx={{ position: 'absolute', top: 10, right: 10 }}>
                         <CloseIcon />
                     </IconButton>
-                    <LabTest />
+                    <LabTest visitID={state?.id} patient_NationalID={state?.patient_NationalID} />
                 </Box>
             </ModalCustom>
             <ModalCustom open={openPreviousVisits} title={'Previous Visits'}>
@@ -399,3 +407,24 @@ const MeetingRoom1 = ({ state }) => {
 };
 
 export default MeetingRoom1;
+const AutoCompleteCom = memo(({ data, onChange, value, placeholder, showKey, listName }) => {
+    return (
+        <div style={{ width: '100%' }}>
+            <input
+                list={listName}
+                placeholder={placeholder}
+                style={{
+                    padding: 10,
+                    borderRadius: 10,
+                    border: '1px solid #bfc0c2',
+                    fontSize: 14,
+                    width: '100%',
+                    backgroundColor: '#f8fafc'
+                }}
+                onChange={onChange}
+                value={value}
+            />
+            <datalist id={listName}>{data && data.map((item, index) => <option key={index} value={item} />)}</datalist>
+        </div>
+    );
+});

@@ -120,7 +120,8 @@ export default function Scheduler() {
                         VitalSignID: null,
                         HistoryID: null,
                         status: 0,
-                        meetingType: 'Virtual'
+                        meetingType: 'Virtual',
+                        isConfirm: false
                     };
                     console.log(body);
                     res = await axios({
@@ -201,16 +202,14 @@ export default function Scheduler() {
 
             const res = await axios({
                 method: 'get',
-                url: `${BASE_URL}api/visit/primaryCareVisitsList/${user?.userId}?pageNumber=1&pageSize=1000&QuerySearch=${
-                    searchValue ?? ''
-                }&IsConfirm=`,
+                url: `${BASE_URL}api/visit`,
                 headers: {
                     Authorization: `Bearer ${user?.token}`
                 }
             });
 
             let newArr = [];
-            res?.data?.items?.map((item) => {
+            res?.data?.map((item) => {
                 let visitObj = {};
                 visitObj.id = item.id;
                 visitObj.start = new Date(item.startDateTime);
