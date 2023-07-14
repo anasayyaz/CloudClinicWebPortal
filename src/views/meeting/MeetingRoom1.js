@@ -66,6 +66,8 @@ const MeetingRoom1 = ({ state }) => {
     const [openNotes, setOpenNotes] = useState(false);
     const [followUpDate, setFollowUpDate] = useState(new Date());
     const [speciality, setSpeciality] = useState();
+    const [notes, setNotes] = useState();
+    const [intitialComplain, setInitialComplain] = useState();
     async function startConference() {
         const domain = 'meet.cloudclinic.ai';
         const visitresponse = await axios({
@@ -76,6 +78,7 @@ const MeetingRoom1 = ({ state }) => {
             }
         });
         setvr(visitresponse);
+        setNotes(visitresponse.data[0].notes);
         setroomName(visitresponse.data[0].meetinglink);
 
         setLoading(false);
@@ -113,10 +116,58 @@ const MeetingRoom1 = ({ state }) => {
         console.log(speciality);
         setOpenConsultationNeeded(true);
     }
+
+    const handleEnd = async () => {
+        try {
+            const body = {
+                isConsultantRequired: false,
+                referredTo: 'aaa',
+                followupdatetime: followUpDate,
+                isfollowup: 1,
+                isConsultantappointmentSchedule: true,
+                prescription: '',
+                notes: notes,
+                initialComplain: '',
+                isActive: false,
+                status: 8
+            };
+            const responseVisit = await axios({
+                method: 'put',
+                url: `${BASE_URL}api/visit/${state?.id}`,
+                data: body,
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${user?.token}`
+                }
+            });
+        } catch (err) {
+            console.error(err.message);
+        }
+        try {
+            const bodyUpdate = {
+                IsAppointmentSchedule: false,
+                followupdatetime: followUpDate,
+                isfollowup: 1,
+                isConsultantappointmentSchedule: true,
+                IsAppointmentSchedule: false
+            };
+            const responseVisitUpdate = await axios({
+                method: 'put',
+                url: `${BASE_URL}api/visit/updatePatientTags/${state?.patient_NationalID}`,
+                data: bodyUpdate,
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${user?.token}`
+                }
+            });
+        } catch (err) {
+            console.error(err.message);
+        }
+    };
     return (
         <div>
             <ModalCustom open={openFollowUp} title={'Follow Up Timing'}>
-                <Box>
+                <Box sx={{ width: '30vw' }}>
                     <IconButton color="inherit" onClick={() => setOpenFollowUp(false)} sx={{ position: 'absolute', top: 10, right: 10 }}>
                         <CloseIcon />
                     </IconButton>
@@ -140,7 +191,7 @@ const MeetingRoom1 = ({ state }) => {
                 </Box>
             </ModalCustom>
             <ModalCustom open={openConsultationNeeded} title={'Consultation Needed'}>
-                <Box>
+                <Box sx={{ width: '30vw' }}>
                     <IconButton
                         color="inherit"
                         onClick={() => setOpenConsultationNeeded(false)}
@@ -173,7 +224,7 @@ const MeetingRoom1 = ({ state }) => {
                 </Box>
             </ModalCustom>
             <ModalCustom open={openLabTest} title={'Lab Test'}>
-                <Box sx={{ width: '50vw' }}>
+                <Box sx={{ width: '40vw' }}>
                     <IconButton color="inherit" onClick={() => setOpenLabTest(false)} sx={{ position: 'absolute', top: 10, right: 10 }}>
                         <CloseIcon />
                     </IconButton>
@@ -193,7 +244,7 @@ const MeetingRoom1 = ({ state }) => {
                 </Box>
             </ModalCustom>
             <ModalCustom open={openPrescription} title={'Prescription'}>
-                <Box sx={{ width: '50vw' }}>
+                <Box sx={{ width: '40vw' }}>
                     <IconButton
                         color="inherit"
                         onClick={() => setOpenPrescription(false)}
@@ -209,8 +260,32 @@ const MeetingRoom1 = ({ state }) => {
                     />
                 </Box>
             </ModalCustom>
+            <ModalCustom open={openNotes} title={'Notes'}>
+                <Box sx={{ width: '30vw' }}>
+                    <IconButton color="inherit" onClick={() => setOpenNotes(false)} sx={{ position: 'absolute', top: 10, right: 10 }}>
+                        <CloseIcon />
+                    </IconButton>
+                    <Grid item lg={12} md={12} sm={12} xs={12} mt={1}>
+                        <TextField
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            fullWidth
+                            label=""
+                            variant="outlined"
+                            rows={4}
+                            multiline
+                        />
+                        <Button onClick={() => setOpenNotes(false)} variant="text" sx={{ color: 'red' }}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" variant="text" sx={{ color: COLORS.secondory }}>
+                            Save
+                        </Button>
+                    </Grid>
+                </Box>
+            </ModalCustom>
             <ModalCustom open={openDiagnosis} title={'Diagnosis'}>
-                <Box sx={{ width: '50vw' }}>
+                <Box sx={{ width: '40vw' }}>
                     <IconButton color="inherit" onClick={() => setOpenDiagnosis(false)} sx={{ position: 'absolute', top: 10, right: 10 }}>
                         <CloseIcon />
                     </IconButton>
@@ -250,29 +325,6 @@ const MeetingRoom1 = ({ state }) => {
                 </DialogActions>
             </Dialog>
 
-            {/* <Dialog open={openDiagnosis} onClose={() => setOpenDiagnosis(false)}>
-                <DialogContent style={{ width: '500px' }}>
-                    <Diagnosis cname={'Usman'} visitID={state?.id} />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenDiagnosis(false)}>Cancel</Button>
-                    <Button onClick={() => setOpenDiagnosis(true)}>Update</Button>
-                </DialogActions>
-            </Dialog> */}
-            <Dialog open={openNotes} onClose={() => setOpenNotes(false)}>
-                <DialogContent style={{ width: '500px' }}>notes</DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenNotes(false)}>Cancel</Button>
-                    <Button onClick={() => setOpenNotes(true)}>Update</Button>
-                </DialogActions>
-            </Dialog>
-            {/* <Grid item lg={12} xs={12}>
-                <Typography variant="h4" component="h3" sx={{ color: 'black', p: 1 }}>
-                    ◉ Visit ID: <span style={{ color: '#0096FF' }}>state?.id</span> ◉ Patient Name:{' '}
-                    <span style={{ color: '#0096FF' }}>Ahmad Ali bhatti</span> ◉ Doctor Name:{' '}
-                    <span style={{ color: '#0096FF' }}>Zahid Lateef</span>
-                </Typography>
-            </Grid> */}
             <MainCard>
                 <Grid container spacing={1}>
                     <Grid item lg={2} xs={12}>
@@ -288,7 +340,7 @@ const MeetingRoom1 = ({ state }) => {
                     <Grid item lg={2} xs={12}>
                         <Button fullWidth variant="contained">
                             <EditIcon sx={{ fontSize: 18, color: 'white', marginRight: '5px' }} />
-                            Vital Signs
+                            {'Vital Sign'}
                         </Button>
                     </Grid>{' '}
                     <Grid item lg={2} xs={12}>
@@ -391,12 +443,17 @@ const MeetingRoom1 = ({ state }) => {
                         </Button>
                     </Grid>
                     <Grid item lg={1}>
-                        <Button fullWidth variant="contained">
+                        <Button fullWidth variant="contained" onClick={() => setOpenNotes(true)}>
                             Notes
                         </Button>
                     </Grid>
                     <Grid item lg={1}>
-                        <Button fullWidth variant="contained" sx={{ backgroundColor: '#FF2E2E', '&: hover': { background: '#c7020c' } }}>
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            sx={{ backgroundColor: '#FF2E2E', '&: hover': { background: '#c7020c' } }}
+                            onClick={() => handleEnd()}
+                        >
                             End
                         </Button>
                     </Grid>

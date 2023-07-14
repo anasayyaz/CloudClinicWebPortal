@@ -248,19 +248,14 @@ const MedicineComp = (props) => {
                     {diagnosis && (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
                             <Box sx={{ display: 'flex', flex: 1, gap: 1 }}>
-                                <Box sx={{ display: 'flex', flex: 1 }}>
-                                    <AutoCompleteCom
-                                        listName={'diagnosis'}
-                                        data={diagnosis}
-                                        onChange={(e) => setSelectedDiagnosis(e.target.value)}
-                                        value={selectedDiagnosis}
-                                        placeholder={'Diagnosis List'}
-                                        showKey={['code', 'name', 'diseaseDiscription']}
-                                    />
-                                </Box>
-                            </Box>
-
-                            <Box sx={{ display: 'flex', flex: 1, gap: 1 }}>
+                                <AutoCompleteCom
+                                    listName={'diagnosis'}
+                                    data={diagnosis}
+                                    onChange={(e) => setSelectedDiagnosis(e.target.value)}
+                                    value={selectedDiagnosis}
+                                    placeholder={'Diagnosis List'}
+                                    showKey={['code', 'name', 'diseaseDiscription']}
+                                />
                                 <Button variant="outlined" onClick={handleAdd}>
                                     Add
                                 </Button>
