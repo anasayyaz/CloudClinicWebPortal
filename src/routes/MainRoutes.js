@@ -37,7 +37,7 @@ import AddNewReceptionist from 'views/staff/receptionists/AddNew';
 import EditReceptionist from 'views/staff/receptionists/Edit';
 
 // dashboard routing
-const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+const DashboardDefault = Loadable(lazy(() => import('views/dashboard')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 

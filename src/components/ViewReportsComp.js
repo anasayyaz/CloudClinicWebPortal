@@ -61,7 +61,10 @@ export default function ViewReportsComp({ visit, open, onClose }) {
                                     <AccordionDetails>
                                         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                                             {item?.list.map((report) => (
-                                                <Box onClick={() => setSelectedImage({ open: true, image: report?.imagePath })}>
+                                                <Box
+                                                    key={report?.imagePath}
+                                                    onClick={() => setSelectedImage({ open: true, image: report?.imagePath })}
+                                                >
                                                     <img
                                                         src={`${BASE_URL}media/${user?.domain}/Documents/${report?.imagePath}`}
                                                         alt={'lab report'}

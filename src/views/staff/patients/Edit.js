@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Paper from '@mui/material/Paper';
 import {
+    Autocomplete,
     Box,
     Button,
     CircularProgress,
@@ -11,6 +12,7 @@ import {
     MenuItem,
     Select,
     Switch,
+    TextField,
     Typography
 } from '@mui/material';
 
@@ -41,6 +43,7 @@ import ModalConfirmation from 'ui-component/modals/ModalConfirmation';
 import { resetPassword } from 'services/resetPassword';
 import { getDetail } from 'services/getDetail';
 import { deleteUser } from 'services/deleteUser';
+import useFetch from 'hooks/useFetch';
 
 export default function EditPatient() {
     const navigate = useNavigate();
@@ -55,6 +58,7 @@ export default function EditPatient() {
     const [mobileNo, setMobileNo] = useState(state?.phone);
     const [guardianPhone, setGuardianPhone] = useState('');
     const [inHospital, setInHospital] = useState(false);
+    const [selectedWardId, setSelectedWardId] = useState(null);
 
     const [loading, setLoading] = useState(false);
     const [loadingReset, setLoadingReset] = useState(false);
@@ -72,6 +76,7 @@ export default function EditPatient() {
                 setPatientDetail(res?.data);
                 setGuardianPhone(res?.data?.guardianPhone);
                 setInHospital(res?.data?.inHospital);
+                setSelectedWardId(res?.data?.wardID);
             }
         } catch (error) {
             console.log('error ', error);
@@ -83,6 +88,8 @@ export default function EditPatient() {
     useEffect(() => {
         getPatientDetail();
     }, []);
+
+    const { data: wardList, loading: loadingWard, error: errorWard, refetch: refetchWard } = useFetch(`${BASE_URL}api/ward`);
 
     // =========================  Schema and validation schema of Form using Yup
 
@@ -121,6 +128,9 @@ export default function EditPatient() {
         try {
             if (mobileNo.length < 12) {
                 return toast.error('Please enter valid mobile number');
+            }
+            if (inHospital && selectedWardId == null) {
+                return toast.error('Please select ward');
             }
 
             const { title, mrNumber, firstName, lastName, emailId, identificationNo, gender, dateOfBirth, address, guardianName } = values;
@@ -173,7 +183,8 @@ export default function EditPatient() {
                     mrNumber: mrNumber.trim(),
                     inHospital: inHospital,
                     guardianName: guardianName.trim(),
-                    guardianPhone: guardianPhone.trim().replace(/\D/g, '')
+                    guardianPhone: guardianPhone.trim().replace(/\D/g, ''),
+                    wardID: inHospital ? selectedWardId : null
                 };
 
                 const responseUpdatePatient = await axios({
@@ -341,6 +352,20 @@ export default function EditPatient() {
                                         label="In Hospital"
                                     />
                                 </Grid>
+
+                                {inHospital && (
+                                    <Grid item lg={3} md={4} sm={6} xs={12}>
+                                        <Autocomplete
+                                            options={wardList ?? []}
+                                            getOptionLabel={(ward) => `${ward?.name}`}
+                                            value={wardList?.find((i) => i?.wardID == selectedWardId)}
+                                            onChange={(event, selected) => {
+                                                setSelectedWardId(selected?.wardID || null);
+                                            }}
+                                            renderInput={(params) => <TextField {...params} label="Ward" variant="standard" />}
+                                        />
+                                    </Grid>
+                                )}
                             </Grid>
                         </Paper>
 

@@ -3,14 +3,18 @@ import React, { useRef, useState, useEffect, useContext, memo, useCallback } fro
 import { Box, Button, Checkbox, CircularProgress, FormControlLabel, Typography } from '@mui/material';
 import { BASE_URL } from 'constants/baseUrl';
 import useFetch from 'hooks/useFetch';
+import { getData } from 'utils/indexedDB';
 
 const DiagnosisComp = () => {
-    const {
-        data: diagnosis,
-        loading: loadingDiagnosis,
-        error: errorDiagnosis,
-        refetch: refetchDiagnosis
-    } = useFetch(`${BASE_URL}api/diagnostic`);
+    const [diagnosis, setDiagnosis] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getData('diagnosis').then((res) => {
+            setDiagnosis(res);
+            setLoading(false);
+        });
+    }, []);
 
     const [selectedDiagnosis, setSelectedDiagnosis] = useState('');
     const [instruction, setInstruction] = useState('');
@@ -96,7 +100,7 @@ const DiagnosisComp = () => {
                 </Box>
             )}
 
-            {loadingDiagnosis && (
+            {loading && (
                 <Box
                     sx={{
                         display: 'flex',

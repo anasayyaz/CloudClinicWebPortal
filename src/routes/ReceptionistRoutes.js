@@ -21,7 +21,7 @@ import { Navigate } from 'react-router-dom';
 import PageNotFound from 'views/pageNotFound';
 
 // dashboard routing
-const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+const DashboardDefault = Loadable(lazy(() => import('views/dashboard')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -98,6 +98,10 @@ const ReceptionistRoutes = {
         {
             path: 'device',
             element: <Device />
+        },
+        {
+            path: 'meeting/:visitId',
+            element: <Meeting />
         },
         {
             path: '*',

@@ -7,7 +7,10 @@ export const deleteUser = async (role, nationalId) => {
     const response = await axios({
         method: 'delete',
         url: `${BASE_URL}api/${role}/${nationalId}`,
-        data: {},
+        data: {
+            deletedBy: user?.userId,
+            deletedOn: new Date()
+        },
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${user?.token}`

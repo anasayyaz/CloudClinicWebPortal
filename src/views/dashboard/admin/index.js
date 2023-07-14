@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { Divider, Grid } from '@mui/material';
 
 // project imports
-import TotalOrderDarkChartCard from './TotalOrderDarkChartCard';
-import TotalIncomeDarkCard from './TotalIncomeDarkCard';
-import TotalIncomeLightCard from './TotalIncomeLightCard';
+import TotalOrderDarkChartCard from '../cards/TotalOrderDarkChartCard';
+import TotalIncomeDarkCard from '../cards/TotalIncomeDarkCard';
+import TotalIncomeLightCard from '../cards/TotalIncomeLightCard';
 import { gridSpacing } from 'store/constant';
-import TotalOrderLightChartCard from './TotalOrderLightChartCard';
+import TotalOrderLightChartCard from '../cards/TotalOrderLightChartCard';
 
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import PermContactCalendarOutlinedIcon from '@mui/icons-material/PermContactCalendarOutlined';
@@ -23,14 +23,23 @@ import {
     IconUser
 } from '@tabler/icons';
 import { useNavigate } from 'react-router';
+import useFetch from 'hooks/useFetch';
+import { BASE_URL } from 'constants/baseUrl';
 
 // ==============================|| DEFAULT DASHBOARD ||============================== //
 
-const Dashboard = () => {
+const Admin = () => {
     const [isLoading, setLoading] = useState(true);
     useEffect(() => {
         setLoading(false);
     }, []);
+
+    const {
+        data: stats,
+        loading: loadingStats,
+        error: errorStats,
+        refetch: refetchStats
+    } = useFetch(`${BASE_URL}api/DashBoard/AdminDBStats`);
 
     const navigate = useNavigate();
 
@@ -41,7 +50,7 @@ const Dashboard = () => {
                     <Grid item lg={3} md={6} sm={6} xs={12}>
                         <TotalOrderDarkChartCard
                             title={'Today Visits'}
-                            number={3}
+                            number={stats?.adminStats?.totalCounttodaysvisits || 0}
                             icon={<IconCalendarEvent fontSize="inherit" />}
                             isLoading={isLoading}
                         />
@@ -49,7 +58,7 @@ const Dashboard = () => {
                     <Grid item lg={3} md={6} sm={6} xs={12}>
                         <TotalOrderLightChartCard
                             title={'Today Virtual Appointments'}
-                            number={3}
+                            number={stats?.adminStats?.countTodayVirtualAppoinments || 0}
                             icon={<IconCalendarDue fontSize="inherit" />}
                             isLoading={isLoading}
                         />
@@ -57,7 +66,7 @@ const Dashboard = () => {
                     <Grid item lg={3} md={6} sm={6} xs={12}>
                         <TotalOrderDarkChartCard
                             title={'Today In-Person Appointments'}
-                            number={3}
+                            number={stats?.adminStats?.countTodayInpersonAppoinments || 0}
                             icon={<PermContactCalendarOutlinedIcon fontSize="inherit" />}
                             isLoading={isLoading}
                         />
@@ -65,7 +74,7 @@ const Dashboard = () => {
                     <Grid item lg={3} md={6} sm={6} xs={12}>
                         <TotalOrderLightChartCard
                             title={'Cancelled Appointments'}
-                            number={0}
+                            number={stats?.adminStats?.countTotalCancelVisits || 0}
                             icon={<IconCalendarOff fontSize="inherit" />}
                             isLoading={isLoading}
                         />
@@ -77,7 +86,7 @@ const Dashboard = () => {
                     <Grid item lg={3} md={6} sm={6} xs={12}>
                         <TotalOrderDarkChartCard
                             title={'Patients'}
-                            number={3}
+                            number={stats?.adminStats?.totalCountpatients || 0}
                             icon={<IconWheelchair fontSize="inherit" />}
                             isLoading={isLoading}
                         />
@@ -85,7 +94,7 @@ const Dashboard = () => {
                     <Grid item lg={3} md={6} sm={6} xs={12}>
                         <TotalOrderLightChartCard
                             title={'Physicians'}
-                            number={10}
+                            number={stats?.adminStats?.totalCountphysicians || 0}
                             icon={<IconStethoscope fontSize="inherit" />}
                             isLoading={isLoading}
                         />
@@ -93,7 +102,7 @@ const Dashboard = () => {
                     <Grid item lg={3} md={6} sm={6} xs={12}>
                         <TotalOrderDarkChartCard
                             title={'Receptionists'}
-                            number={3}
+                            number={stats?.adminStats?.totalCountReceptionist || 0}
                             icon={<IconUser fontSize="inherit" />}
                             isLoading={isLoading}
                         />
@@ -101,7 +110,7 @@ const Dashboard = () => {
                     <Grid item lg={3} md={6} sm={6} xs={12}>
                         <TotalOrderLightChartCard
                             title={'Nurses'}
-                            number={5}
+                            number={stats?.adminStats?.totalCountnurses || 0}
                             icon={<IconNurse fontSize="inherit" />}
                             isLoading={isLoading}
                         />
@@ -149,4 +158,4 @@ const Dashboard = () => {
     );
 };
 
-export default Dashboard;
+export default Admin;

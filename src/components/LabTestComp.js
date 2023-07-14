@@ -3,14 +3,18 @@ import React, { useRef, useState, useEffect, useContext, memo, useCallback } fro
 import { Box, Button, Checkbox, CircularProgress, FormControlLabel, Typography } from '@mui/material';
 import { BASE_URL } from 'constants/baseUrl';
 import useFetch from 'hooks/useFetch';
+import { getData } from 'utils/indexedDB';
 
 const LabTestComp = () => {
-    const {
-        data: labTestType,
-        loading: loadingLabTestType,
-        error: errorLabTestType,
-        refetch: refetchLabTestType
-    } = useFetch(`${BASE_URL}api/LabTestType`);
+    const [labTestType, setLabTestType] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getData('labTestType').then((res) => {
+            setLabTestType(res);
+            setLoading(false);
+        });
+    }, []);
 
     const [selectedLabTest, setSelectedLabTest] = useState('');
 
@@ -74,7 +78,7 @@ const LabTestComp = () => {
                 </Box>
             )}
 
-            {loadingLabTestType && (
+            {loading && (
                 <Box
                     sx={{
                         display: 'flex',

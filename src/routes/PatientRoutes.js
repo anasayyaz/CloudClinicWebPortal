@@ -12,7 +12,7 @@ import PageNotFound from 'views/pageNotFound';
 import Meeting from 'views/meeting';
 
 // dashboard routing
-const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+const DashboardDefault = Loadable(lazy(() => import('views/dashboard')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 

@@ -6,9 +6,10 @@ import Loadable from 'ui-component/Loadable';
 import { Navigate } from 'react-router-dom';
 import AppointmentList from 'views/appointmentList';
 import PageNotFound from 'views/pageNotFound';
+import Meeting from 'views/meeting';
 
 // dashboard routing
-const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+const DashboardDefault = Loadable(lazy(() => import('views/dashboard')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -31,6 +32,10 @@ const NurseRoutes = {
         {
             path: 'appointment-list',
             element: <AppointmentList />
+        },
+        {
+            path: 'meeting/:visitId',
+            element: <Meeting />
         },
         {
             path: '*',

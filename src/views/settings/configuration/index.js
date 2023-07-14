@@ -1,20 +1,34 @@
 // material-ui
-import { Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
+import { addData, getData } from 'utils/indexedDB';
+import syncListToLS from 'utils/syncListToLS';
 
 // ==============================|| SAMPLE PAGE ||============================== //
 
-const Configuration = () => (
-    <MainCard title="Configuration">
-        <Typography variant="body2">
-            Lorem ipsum dolor sit amen, consenter nipissing eli, sed do elusion tempos incident ut laborers et doolie magna alissa. Ut enif
-            ad minim venice, quin nostrum exercitation illampu laborings nisi ut liquid ex ea commons construal. Duos aube grue dolor in
-            reprehended in voltage veil esse colum doolie eu fujian bulla parian. Exceptive sin ocean cuspidate non president, sunk in culpa
-            qui officiate descent molls anim id est labours.
-        </Typography>
-    </MainCard>
-);
+const Configuration = () => {
+    const handleAdd = () => {
+        syncListToLS();
+    };
+
+    const handleGet = async () => {
+        const res = await getData('medicine');
+
+        console.log('Datat   ', res);
+    };
+
+    return (
+        <MainCard title="Configuration">
+            <Button onClick={handleAdd} variant="contained">
+                Add Data
+            </Button>
+            <Button onClick={() => handleGet()} variant="contained">
+                Get Data
+            </Button>
+        </MainCard>
+    );
+};
 
 export default Configuration;

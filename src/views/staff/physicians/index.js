@@ -118,6 +118,7 @@ export default function Physicians() {
                         </Grid>
                         <Grid item>
                             <Button
+                                disabled
                                 variant="contained"
                                 startIcon={<IconPlus size={17} />}
                                 sx={{ backgroundColor: COLORS.secondory, '&: hover': { background: COLORS.primary } }}
@@ -147,7 +148,7 @@ export default function Physicians() {
                                 setSearchQuery('');
                                 getPhysicianList(0, rowsPerPage, '');
                             }}
-                            titleSearchBtn={'Search Patient'}
+                            titleSearchBtn={'Search Physician'}
                             titleClearBtn={'Clear search list'}
                         />
                     </Grid>
@@ -254,7 +255,9 @@ export default function Physicians() {
                                 {!!error && (
                                     <TableRow sx={{ height: 400 }}>
                                         <TableCell align="center" colSpan={6}>
-                                            <Typography>{error?.response?.data?.message ?? error?.message}</Typography>
+                                            <Typography>
+                                                {error?.response?.data?.message ?? error?.response?.data ?? error?.message}
+                                            </Typography>
                                         </TableCell>
                                     </TableRow>
                                 )}
