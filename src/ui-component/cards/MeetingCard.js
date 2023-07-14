@@ -32,7 +32,9 @@ export default function MeetingCard({
 }) {
     const [openQR, setOpenQR] = useState(false);
     const navigate = useNavigate();
-    let physicianName = `${visit?.consultantTitle} ${visit?.consultantFirstName} ${visit?.consultantLastName}`;
+    let physicianName = `${visit?.consultantTitle ? `${visit?.consultantTitle}` : `${visit?.doctorTitle}`}  ${
+        visit?.consultantFirstName ? `${visit?.consultantFirstName}` : `${visit?.doctorFirstName}`
+    } ${visit?.consultantLastName ? `${visit?.consultantLastName}` : `${visit?.doctorLastName}`}`;
     let patientName = `${visit?.patientTitle} ${visit?.patientFirstName} ${visit?.patientLastName}`;
 
     return (

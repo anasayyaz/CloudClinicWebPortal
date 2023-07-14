@@ -265,8 +265,13 @@ const MedicineComp = (props) => {
                 <>
                     {' '}
                     <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
-                            <Typography sx={{ color: '#0E86D4', fontWeight: '600' }}>Current Medications</Typography>
+                        <AccordionSummary
+                            sx={{ backgroundColor: '#0E86D4', borderRadius: 3 }}
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                        >
+                            <Typography sx={{ color: 'white', fontWeight: '600' }}>Current Medications</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                             {patientPrescription &&
@@ -304,8 +309,13 @@ const MedicineComp = (props) => {
                         </AccordionDetails>
                     </Accordion>
                     <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel2a-content" id="panel2a-header">
-                            <Typography sx={{ color: '#0E86D4', fontWeight: '600' }}>Discontinued Medications</Typography>
+                        <AccordionSummary
+                            sx={{ backgroundColor: '#0E86D4', borderRadius: 3 }}
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel2a-content"
+                            id="panel2a-header"
+                        >
+                            <Typography sx={{ color: 'white', fontWeight: '600' }}>Discontinued Medications</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                             {patientPrescription &&
