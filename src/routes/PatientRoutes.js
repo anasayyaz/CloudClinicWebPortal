@@ -9,9 +9,10 @@ import LabReports from 'views/patientPages/labReports';
 import Medicines from 'views/patientPages/medicines';
 import PreviousVisits from 'views/patientPages/previousVisits';
 import PageNotFound from 'views/pageNotFound';
+import Meeting from 'views/meeting';
 
 // dashboard routing
-const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+const DashboardDefault = Loadable(lazy(() => import('views/dashboard')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -47,6 +48,10 @@ const PatientRoutes = {
         {
             path: 'previous-visits',
             element: <PreviousVisits />
+        },
+        {
+            path: 'meeting/:visitId',
+            element: <Meeting />
         },
         {
             path: '*',

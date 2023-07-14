@@ -1,6 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import Paper from '@mui/material/Paper';
-import { Box, Button, CircularProgress, FormControl, Grid, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import {
+    Autocomplete,
+    Box,
+    Button,
+    CircularProgress,
+    FormControl,
+    Grid,
+    InputLabel,
+    MenuItem,
+    Select,
+    TextField,
+    Typography
+} from '@mui/material';
 
 import * as Yup from 'yup';
 import { Formik, Form } from 'formik';
@@ -27,6 +39,7 @@ import { useLocation, useNavigate } from 'react-router';
 import ModalConfirmation from 'ui-component/modals/ModalConfirmation';
 
 import { resetPassword } from 'services/resetPassword';
+import useFetch from 'hooks/useFetch';
 
 export default function EditReceptionist() {
     const navigate = useNavigate();
@@ -35,6 +48,7 @@ export default function EditReceptionist() {
     const receptionist = state;
 
     const [mobileNo, setMobileNo] = useState(receptionist?.phoneNumber);
+    const [selectedLocationId, setSelectedLocationId] = useState(null);
 
     const [loading, setLoading] = useState(false);
     const [loadingReset, setLoadingReset] = useState(false);
@@ -62,6 +76,17 @@ export default function EditReceptionist() {
         address: Yup.string().required('Required')
     });
 
+    const {
+        data: location,
+        loading: loadingLocation,
+        error: errorLocation,
+        refetch: refetchLocation
+    } = useFetch(`${BASE_URL}api/location`);
+
+    useEffect(() => {
+        setSelectedLocationId(receptionist?.locationID);
+    }, [location]);
+
     // =================================  Update Function for Updating user
 
     const handleUpdate = async (values, resetForm) => {
@@ -69,6 +94,9 @@ export default function EditReceptionist() {
         try {
             if (mobileNo.length < 12) {
                 return toast.error('Please enter valid mobile number');
+            }
+            if (selectedLocationId == null) {
+                return toast.error('Please select receptionist location');
             }
 
             const { title, employeeId, firstName, lastName, emailId, address } = values;
@@ -88,6 +116,7 @@ export default function EditReceptionist() {
                     email: emailId.trim(),
                     emailConfirmed: true,
                     address: address.trim(),
+                    locationID: selectedLocationId,
                     phoneNumber: mobileNo.trim().replace(/\D/g, ''),
                     profileImage: receptionist?.profileImage,
                     logoutEnabled: false,
@@ -138,7 +167,10 @@ export default function EditReceptionist() {
             const responseDeleteRecep = await axios({
                 method: 'delete',
                 url: `${BASE_URL}api/accounts/user/${receptionist?.id}`,
-                data: {},
+                data: {
+                    deletedOn: new Date(),
+                    deletedBy: user?.userId
+                },
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${user?.token}`
@@ -218,6 +250,18 @@ export default function EditReceptionist() {
 
                             <Grid item lg={4} md={4} sm={6} xs={12}>
                                 <Textfield name="address" label="Address" />
+                            </Grid>
+
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <Autocomplete
+                                    options={location ?? []}
+                                    getOptionLabel={(loc) => `${loc?.name} - ${loc?.address}`}
+                                    value={location && location?.find((i) => i?.locationID == selectedLocationId)}
+                                    onChange={(event, selected) => {
+                                        setSelectedLocationId(selected?.locationID || null);
+                                    }}
+                                    renderInput={(params) => <TextField {...params} label="Location" variant="standard" />}
+                                />
                             </Grid>
                         </Grid>
                     </Paper>

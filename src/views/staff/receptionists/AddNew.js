@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import Paper from '@mui/material/Paper';
-import { Button, CircularProgress, FormControl, Grid, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import {
+    Autocomplete,
+    Button,
+    CircularProgress,
+    FormControl,
+    Grid,
+    InputLabel,
+    MenuItem,
+    Select,
+    TextField,
+    Typography
+} from '@mui/material';
 
 import * as Yup from 'yup';
 import { Formik, Form } from 'formik';
@@ -29,6 +40,7 @@ export default function AddNewReceptionist() {
     const { user } = useSelector((state) => state.user);
 
     const [mobileNo, setMobileNo] = useState('');
+    const [selectedlocationId, setSelectedLocationId] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const INITIAL_FORM_STATE = {
@@ -49,11 +61,21 @@ export default function AddNewReceptionist() {
         address: Yup.string().required('Required')
     });
 
+    const {
+        data: location,
+        loading: loadingLocation,
+        error: errorLocation,
+        refetch: refetchLocation
+    } = useFetch(`${BASE_URL}api/location`);
+
     const handleSubmit = async (values, resetForm) => {
         setLoading(true);
         try {
             if (mobileNo.length < 15) {
                 return toast.error('Please enter valid mobile number');
+            }
+            if (selectedlocationId == null) {
+                return toast.error('Please select receptionist location');
             }
 
             const { title, employeeId, firstName, lastName, emailId, address } = values;
@@ -70,6 +92,7 @@ export default function AddNewReceptionist() {
                     lastName: lastName.trim(),
                     phoneNumber: mobileNo.trim().replace(/\D/g, ''),
                     employeeCode: employeeId.trim(),
+                    locationID: selectedlocationId,
                     address: address.trim(),
                     createdBy: user?.userId,
                     createdOn: new Date(),
@@ -84,6 +107,7 @@ export default function AddNewReceptionist() {
             if (responseCreateAccount?.data) {
                 resetForm();
                 setMobileNo('+92');
+                setSelectedLocationId(null);
                 return toast.success('Receptionist created successfully');
             }
         } catch (error) {
@@ -153,6 +177,18 @@ export default function AddNewReceptionist() {
 
                             <Grid item lg={4} md={4} sm={6} xs={12}>
                                 <Textfield name="address" label="Address" />
+                            </Grid>
+
+                            <Grid item lg={4} md={4} sm={6} xs={12}>
+                                <Autocomplete
+                                    options={location ?? []}
+                                    getOptionLabel={(loc) => `${loc?.name} - ${loc?.address}`}
+                                    value={location?.find((i) => i?.locationID == selectedlocationId)}
+                                    onChange={(event, selected) => {
+                                        setSelectedLocationId(selected?.locationID || null);
+                                    }}
+                                    renderInput={(params) => <TextField {...params} label="Location" variant="standard" />}
+                                />
                             </Grid>
                         </Grid>
                     </Paper>

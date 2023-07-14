@@ -40,6 +40,7 @@ import { COLORS } from 'constants/colors';
 import { saveUserData } from 'store/slices/userSlice';
 import { BASE_URL } from 'constants/baseUrl';
 import { profileImage } from 'utils/fetchImage';
+import { deleteData } from 'utils/indexedDB';
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -61,6 +62,7 @@ const ProfileSection = () => {
     const handleLogout = async () => {
         localStorage.clear();
         dispatch(saveUserData(null));
+        deleteData();
         navigate('/login');
     };
 

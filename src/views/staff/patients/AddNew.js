@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Paper from '@mui/material/Paper';
 import {
+    Autocomplete,
     Button,
     CircularProgress,
     FormControl,
@@ -10,6 +11,7 @@ import {
     MenuItem,
     Select,
     Switch,
+    TextField,
     Typography
 } from '@mui/material';
 
@@ -41,6 +43,7 @@ export default function AddNewPatient() {
 
     const [guardianPhone, setGuardianPhone] = useState('');
     const [inHospital, setInHospital] = useState(false);
+    const [selectedWardId, setSelectedWardId] = useState(null);
     const [mobileNo, setMobileNo] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -72,11 +75,17 @@ export default function AddNewPatient() {
         address: Yup.string().required('Required')
     });
 
+    const { data: wardList, loading: loadingWard, error: errorWard, refetch: refetchWard } = useFetch(`${BASE_URL}api/ward`);
+
     const handleSubmit = async (values, resetForm) => {
         setLoading(true);
         try {
             if (mobileNo.length < 15) {
                 return toast.error('Please enter valid mobile number');
+            }
+
+            if (inHospital && selectedWardId == null) {
+                return toast.error('Please select ward');
             }
 
             const { title, mrNumber, firstName, lastName, emailId, identificationNo, gender, dateOfBirth, address, guardianName } = values;
@@ -129,7 +138,8 @@ export default function AddNewPatient() {
                     createdBy: user?.userId,
                     createdOn: new Date(),
                     isActive: true,
-                    profileImage: 'cloudclinic_dummy.jpg'
+                    profileImage: 'cloudclinic_dummy.jpg',
+                    wardID: inHospital ? selectedWardId : null
                 };
 
                 const responseCreatePatient = await axios({
@@ -147,6 +157,7 @@ export default function AddNewPatient() {
                     setMobileNo('+92');
                     setGuardianPhone('+92');
                     setInHospital(false);
+                    setSelectedWardId(null);
                     return toast.success('Patient created successfully');
                 }
             }
@@ -261,12 +272,26 @@ export default function AddNewPatient() {
                                 <Textfield name="address" label="Address" />
                             </Grid>
 
-                            <Grid item lg={6} md={4} sm={12} xs={12}>
+                            <Grid item lg={3} md={4} sm={6} xs={12}>
                                 <FormControlLabel
                                     control={<Switch checked={inHospital} onChange={(e) => setInHospital(e.target.checked)} />}
                                     label="In Hospital"
                                 />
                             </Grid>
+
+                            {inHospital && (
+                                <Grid item lg={3} md={4} sm={6} xs={12}>
+                                    <Autocomplete
+                                        options={wardList ?? []}
+                                        getOptionLabel={(ward) => `${ward?.name}`}
+                                        value={wardList?.find((i) => i?.wardID == selectedWardId)}
+                                        onChange={(event, selected) => {
+                                            setSelectedWardId(selected?.wardID || null);
+                                        }}
+                                        renderInput={(params) => <TextField {...params} label="Ward" variant="standard" />}
+                                    />
+                                </Grid>
+                            )}
                         </Grid>
                     </Paper>
 

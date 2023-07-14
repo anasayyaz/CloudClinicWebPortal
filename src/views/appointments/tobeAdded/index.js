@@ -10,18 +10,29 @@ import {
     Table,
     Paper,
     Button,
+    TextField,
     CircularProgress,
     FormControl,
     Grid,
+    Radio,
+    RadioGroup,
+    FormControlLabel,
     IconButton,
     InputLabel,
     Typography,
     Select,
+    Box,
+    Autocomplete,
     MenuItem
 } from '@mui/material';
 
+import { Field, Form, Formik } from 'formik';
+
+import ModalCustom from 'ui-component/modals/ModalCustom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 // -----------------  Importing Icons
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PrintIcon from '@mui/icons-material/Print';
 
 // -----------------  Importing Constants
@@ -35,8 +46,12 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import SearchField from 'ui-component/FormUI/SearchField.js';
+import Textfield from 'ui-component/FormUI/Textfield';
+import DateTimePicker from 'ui-component/FormUI/DateTimePicker';
+
 import useFetch from 'hooks/useFetch';
 import moment from 'moment';
+import * as Yup from 'yup';
 
 export default function ToBeAdded() {
     const { user } = useSelector((state) => state?.user);
@@ -98,6 +113,84 @@ export default function ToBeAdded() {
     useEffect(() => {
         getToBeAddedList(page, rowsPerPage, action, searchQuery);
     }, []);
+
+    const {
+        data: physicianDataList,
+        loading: loadingphysicianDataList,
+        error: errorphysicianDataList,
+        refetch: refetchphysicianDataList
+    } = useFetch(`${BASE_URL}api/physician/physicianSelectList?pageNumber=1&pageSize=100&QuerySearch=`);
+
+    // ============================================================
+    // Modal States
+    const [selectedRow, setSelectedRow] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [meetingType, setMeetingType] = useState('Virtual');
+
+    const [selectedPhysician, setSelectedPhysician] = useState();
+    const [loadingRequest, setLoadingRequest] = useState(false);
+
+    //------------------------------  Initial Values for our appointment form
+    const INITIAL_VALUES = {
+        title: selectedRow?.title,
+        summaryNotes: selectedRow?.summaryNotes,
+        startDate: moment(new Date()).format('YYYY-MM-DDTHH:mm'),
+        amount: ''
+    };
+
+    //------------------------------  Validation Schema for our appointment form
+    const FORM_VALIDATION = Yup.object().shape({
+        title: Yup.string().required('Required'),
+        summaryNotes: Yup.string().required('Required'),
+        startDate: Yup.date().min(new Date(), 'Start date time must be after current date time').required('Start date is required')
+    });
+
+    const handleRequest = async (values, resetForm) => {
+        setLoadingRequest(true);
+        try {
+            const data = {
+                ...values,
+                Patient_NationalID: selectedRow?.nationalID,
+                Consultant_NationalID: selectedPhysician,
+                StartDateTime: moment(values.startDate).format(),
+                EndDateTime: moment(values.startDate).add(30, 'minutes').format(),
+                meetingType,
+                meetinglink: new Date().getTime(),
+                VitalSignID: null,
+                HistoryID: null,
+                status: 1,
+                isConfirm: false,
+                IsPaid: true,
+                PaymentDate: new Date(),
+                DiscountPerc: '0',
+                NetAmount: values.amount,
+                createdOn: new Date(),
+                createdBy: user?.userId
+            };
+
+            const responseCreateAppointment = await axios({
+                method: 'post',
+                url: `${BASE_URL}api/visit`,
+                data,
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${user?.token}`
+                }
+            });
+
+            getToBeAddedList(page, rowsPerPage, action, searchQuery);
+            if (responseCreateAppointment.status == 200);
+            {
+                setModalOpen(false);
+                resetForm();
+                toast.success(`Apppointment created successfully`);
+            }
+        } catch (error) {
+            toast.error(error?.response?.data?.message || error?.response?.data || error?.message);
+        } finally {
+            setLoadingRequest(false);
+        }
+    };
 
     return (
         <div>
@@ -215,7 +308,14 @@ export default function ToBeAdded() {
                                             <TableCell align={'left'}>{row?.action}</TableCell>
 
                                             <TableCell align={'left'}>
-                                                <Button onClick={() => {}} sx={{ color: COLORS.secondory }}>
+                                                <Button
+                                                    onClick={() => {
+                                                        setSelectedRow(row);
+                                                        setModalOpen(true);
+                                                        setSelectedPhysician(row?.consultant_NationalID);
+                                                    }}
+                                                    sx={{ color: COLORS.secondory }}
+                                                >
                                                     Make an Appt.
                                                 </Button>
                                             </TableCell>
@@ -234,7 +334,7 @@ export default function ToBeAdded() {
                             {!!error && (
                                 <TableRow sx={{ height: 400 }}>
                                     <TableCell align="center" colSpan={6}>
-                                        <Typography>{error?.response?.data?.message ?? error?.message}</Typography>
+                                        <Typography>{error?.response?.data?.message ?? error?.response?.data ?? error?.message}</Typography>
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -251,6 +351,128 @@ export default function ToBeAdded() {
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
                 />
+
+                {/* =========================================  Modal for Creating an Appointment */}
+
+                <ModalCustom open={modalOpen} title={'Create Appointment'}>
+                    <Formik
+                        initialValues={INITIAL_VALUES}
+                        validationSchema={FORM_VALIDATION}
+                        onSubmit={(values, { resetForm }) => handleRequest(values, resetForm)}
+                    >
+                        <Form>
+                            <Box sx={{ maxWidth: 400 }}>
+                                <Grid container direction="row" spacing={2}>
+                                    <Grid item lg={12} md={12} sm={12} xs={12}>
+                                        <Textfield name="title" label="Title" variant="standard" size="small" />
+                                    </Grid>
+
+                                    <Grid item lg={12} md={12} sm={12} xs={12}>
+                                        <Textfield name="summaryNotes" label="Summary" variant="standard" size="small" />
+                                    </Grid>
+
+                                    <Grid item lg={12} md={12} sm={12} xs={12}>
+                                        {/* <Autocomplete
+                                            options={patientDataList ?? []}
+                                            size="small"
+                                            disabled
+                                            getOptionLabel={(patient) => `${patient?.name}  ${patient?.lastName} - ${patient?.phone}`}
+                                            value={patientDataList?.find((i) => i?.nationalID == selectedRow?.nationalID)}
+                                            onChange={(event, selected) => {
+                                                setSelectedPatient(selected?.nationalID || null);
+                                            }}
+                                            renderInput={(params) => <TextField {...params} label="Patient" variant="standard" />}
+                                        /> */}
+
+                                        <TextField
+                                            disabled
+                                            fullWidth
+                                            label="Patient"
+                                            variant="standard"
+                                            value={`${selectedRow?.patientTitle} ${selectedRow?.patientFirstName} ${selectedRow?.patientLastName} - ${selectedRow?.patientPhone}`}
+                                        />
+                                    </Grid>
+
+                                    <Grid item lg={12} md={12} sm={12} xs={12}>
+                                        <Autocomplete
+                                            size="small"
+                                            options={
+                                                physicianDataList?.filter(
+                                                    (i) => i?.speciality?.toLowerCase() == selectedRow?.refferedTo?.toLowerCase()
+                                                ) ||
+                                                physicianDataList ||
+                                                []
+                                            }
+                                            disabled={selectedRow?.isConsultantRequired ? false : true}
+                                            getOptionLabel={(physician) =>
+                                                `${physician?.name}  ${physician?.phone} - ${physician?.speciality}`
+                                            }
+                                            value={physicianDataList?.find((i) => i?.nationalID == selectedPhysician)}
+                                            onChange={(event, selected) => {
+                                                setSelectedPhysician(selected?.nationalID || null);
+                                            }}
+                                            renderInput={(params) => <TextField {...params} label="Physician" variant="standard" />}
+                                        />
+                                    </Grid>
+
+                                    <Grid item lg={12} md={12} sm={12} xs={12}>
+                                        <DateTimePicker
+                                            size="small"
+                                            name="startDate"
+                                            label="Start Date Time"
+                                            type="datetime-local"
+                                            variant="standard"
+                                        />
+                                    </Grid>
+
+                                    <Grid item lg={12} md={12} sm={12} xs={12}>
+                                        <Field>
+                                            {({ field, meta }) => (
+                                                <TextField
+                                                    fullWidth
+                                                    variant="standard"
+                                                    label="End Date Time"
+                                                    type="datetime-local"
+                                                    value={moment(field?.value?.startDate).add(30, 'minutes').format('YYYY-MM-DDTHH:mm')}
+                                                />
+                                            )}
+                                        </Field>
+                                    </Grid>
+
+                                    <Grid item lg={12} md={12} sm={12} xs={12}>
+                                        <Textfield name="amount" label="Amount" variant="standard" size="small" type="number" />
+                                    </Grid>
+
+                                    <Grid item lg={12} md={12} sm={12} xs={12}>
+                                        <FormControl>
+                                            <RadioGroup row value={meetingType} onChange={(e) => setMeetingType(e.target.value)}>
+                                                <FormControlLabel value="Inperson" control={<Radio />} label="In-Person" />
+                                                <FormControlLabel value="Virtual" control={<Radio />} label="Virtual" />
+                                            </RadioGroup>
+                                        </FormControl>
+                                    </Grid>
+
+                                    <Grid item lg={12} md={12} sm={12} xs={12} mt={1}>
+                                        <Box sx={styles.btnContainer}>
+                                            {loadingRequest ? (
+                                                <CircularProgress size={25} color="inherit" />
+                                            ) : (
+                                                <>
+                                                    <Button onClick={() => setModalOpen(false)} variant="text" sx={{ color: 'red' }}>
+                                                        Cancel
+                                                    </Button>
+                                                    <Button type="submit" variant="text" sx={{ color: COLORS.secondory }}>
+                                                        Save
+                                                    </Button>
+                                                </>
+                                            )}
+                                        </Box>
+                                    </Grid>
+                                </Grid>
+                            </Box>
+                        </Form>
+                    </Formik>
+                </ModalCustom>
             </Paper>
         </div>
     );
@@ -263,5 +485,11 @@ const styles = {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    btnContainer: {
+        display: 'flex',
+        direction: 'row',
+        gap: 1,
+        justifyContent: 'flex-end'
     }
 };

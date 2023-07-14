@@ -37,6 +37,7 @@ import { saveUserData } from 'store/slices/userSlice';
 import jwt_decode from 'jwt-decode';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import saveListToLS from 'utils/syncListToLS';
 
 // ============================|| FIREBASE - LOGIN ||============================ //
 
@@ -77,6 +78,7 @@ const FirebaseLogin = ({ ...others }) => {
             const user = { ...res?.data[0], domainLogo: decoded?.Image, domain: decoded?.Domain, token: token };
 
             localStorage.setItem('user', JSON.stringify(user));
+            saveListToLS();
             dispatch(saveUserData(res?.data[0]));
         } catch (error) {
             // console.log('error ', errorMessage[error?.response?.data?.error] ?? error?.response?.data);

@@ -184,7 +184,7 @@ export default function Receptionists() {
                             {!!errorReceptionistList && (
                                 <TableRow sx={{ height: 400 }}>
                                     <TableCell align="center" colSpan={6}>
-                                        <Typography>{error?.response?.data?.message ?? error?.message}</Typography>
+                                        <Typography>{error?.response?.data?.message ?? error?.response?.data ?? error?.message}</Typography>
                                     </TableCell>
                                 </TableRow>
                             )}

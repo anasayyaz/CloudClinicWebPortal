@@ -131,7 +131,10 @@ export default function Scheduler() {
                 IsPaid: true,
                 PaymentDate: new Date(),
                 DiscountPerc: '0',
-                NetAmount: values.amount
+                NetAmount: values.amount,
+                lastModifiedBy: modal.type == 'add' ? null : user?.userId,
+                lastModifiedOn: modal.type == 'add' ? null : new Date(),
+                ...(modal.type == 'add' && { createdOn: new Date(), createdBy: user?.userId })
             };
 
             let method = modal.type == 'add' ? 'post' : 'put';
@@ -165,7 +168,7 @@ export default function Scheduler() {
             const resDeleteVisit = await axios({
                 method: 'delete',
                 url: `${BASE_URL}api/visit/${modal?.data?.id}`,
-                data: {},
+                data: { deletedOn: new Date(), deletedBy: user?.userId },
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${user?.token}`

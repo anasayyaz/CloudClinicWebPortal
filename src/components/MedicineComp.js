@@ -3,16 +3,16 @@ import React, { useRef, useState, useEffect, useContext, memo, useCallback } fro
 import { Box, Button, Checkbox, CircularProgress, FormControlLabel, Typography } from '@mui/material';
 import { BASE_URL } from 'constants/baseUrl';
 import useFetch from 'hooks/useFetch';
+import { getData } from 'utils/indexedDB';
 
 const MedicineComp = () => {
-    // const {
-    //     data: medicine,
-    //     loading: loadingMedicine,
-    //     error: errorMedicine,
-    //     refetch: refetchMedicine
-    // } = useFetch(`${BASE_URL}api/medicine`);
+    const [medicine, setMedicine] = useState(null);
 
-    const medicine = JSON.parse(localStorage.getItem('medicine'));
+    useEffect(() => {
+        getData('medicine').then((res) => {
+            setMedicine(res);
+        });
+    }, []);
 
     const {
         data: route,
